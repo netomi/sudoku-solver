@@ -13,7 +13,7 @@ def BINTRAY_ORGANIZATION = "netomi"
 def ISSUE_URL = "https://github.com/netomi/sudoku-solver/issues"
 def SITE_URL = "https://github.com/netomi/sudoku-solver"
 def VCS_URL = "https://github.com/netomi/sudoku-solver.git"
-def LIBRARY_VERSION_NAME = 0.1
+def LIBRARY_VERSION_NAME = "0.2-SNAPSHOT"
 
 group = GROUP_ID
 version = LIBRARY_VERSION_NAME

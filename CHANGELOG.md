@@ -3,7 +3,9 @@
 ## [unreleased] - yyyy-mm-dd
   
 ### Added
-   
+- added additional hint solver techniques
+  - wings (xy-wing)
+
 ### Changed
   
 ### Fixed

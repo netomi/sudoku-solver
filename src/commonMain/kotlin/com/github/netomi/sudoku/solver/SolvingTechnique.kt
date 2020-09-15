@@ -61,6 +61,9 @@ enum class SolvingTechnique(val techniqueName: String, val supplier: () -> HintF
     // UNIQUE_RECTANGLE_TYPE_3("Unique Rectangle Type 3", ::UniqueRectangleType3Finder),
     UNIQUE_RECTANGLE_TYPE_4("Unique Rectangle Type 4", ::UniqueRectangleType4Finder),
 
+    // Wings.
+    XY_WING("XY-Wing", ::XYWingFinder),
+
     // Chains.
     REMOTE_PAIR("Remote Pair", ::RemotePairFinder),
     X_CHAIN("X-Chain", ::XChainFinder),
