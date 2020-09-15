@@ -1,0 +1,119 @@
+plugins {
+    id 'kotlin-multiplatform'
+    id 'maven-publish'
+}
+
+group   = 'com.github.netomi.sudoku'
+version = '0.1-SNAPSHOT'
+
+ext {
+    junitVersion  = '5.3.2'
+}
+
+kotlin {
+    js {
+        useCommonJs()
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = '10000'
+                }
+            }
+        }
+    }
+
+    targets {
+        fromPreset(presets.jvm, 'jvm') {
+            configure([compilations.main, compilations.test]) {
+                tasks.getByName(compileKotlinTaskName).kotlinOptions {
+                    jvmTarget = '1.8'
+                }
+            }
+        }
+
+        fromPreset(presets.js, 'js') {
+            configure([compilations.main, compilations.test]) {
+                tasks.getByName(compileKotlinTaskName).kotlinOptions {
+                    sourceMap = true
+                    moduleKind = "umd"
+                    metaInfo = true
+                }
+            }
+        }
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test-common'
+                implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test'
+                implementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+
+                implementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+                implementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+                implementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
+            }
+        }
+        jsTest {
+            dependencies {
+                implementation 'org.jetbrains.kotlin:kotlin-test-js'
+            }
+        }
+    }
+}
+
+task copyTestResourcesForJs(type: Copy) {
+    from "$projectDir/src/commonTest/resources"
+    into "${rootProject.buildDir}/js/packages/${project.name}-test/src/commonTest/resources"
+}
+
+jsTest.dependsOn copyTestResourcesForJs
+
+jvmTest {
+    useJUnitPlatform()
+}
+
+tasks.withType(AbstractTestTask) {
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "-" * 80
+            println "Test results: ${result.resultType} " +
+                    "(" +
+                    "${result.testCount} tests, " +
+                    "${result.successfulTestCount} successful, " +
+                    "${result.failedTestCount} failed, " +
+                    "${result.skippedTestCount} skipped" +
+                    ")"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
