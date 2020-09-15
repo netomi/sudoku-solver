@@ -1,5 +1,8 @@
+
 A sudoku solver / generator.
 ============================
+
+![Build status](https://github.com/netomi/sudoku-solver/workflows/gradle/badge.svg)
 
 This repository contains a multiplatform library written in
 Kotlin to solve and generate sudoku puzzles.
