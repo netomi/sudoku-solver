@@ -1,16 +1,30 @@
 plugins {
     id 'kotlin-multiplatform'
     id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.8.4'
 }
 
-group   = 'com.github.netomi.sudoku'
-version = '0.1-SNAPSHOT'
+def GROUP_ID = "com.github.netomi.sudoku"
+def ARTIFACT_ID = "sudoku-solver"
+
+def BINTRAY_REPOSITORY = "sudoku"
+def BINTRAY_ORGANIZATION = "netomi"
+
+def ISSUE_URL = "https://github.com/netomi/sudoku-solver/issues"
+def SITE_URL = "https://github.com/netomi/sudoku-solver"
+def VCS_URL = "https://github.com/netomi/sudoku-solver.git"
+def LIBRARY_VERSION_NAME = 0.1
+
+group = GROUP_ID
+version = LIBRARY_VERSION_NAME
+description = 'Sudoku solver library'
 
 ext {
     junitVersion  = '5.3.2'
 }
 
 kotlin {
+    jvm()
     js {
         useCommonJs()
         nodejs {
@@ -118,20 +132,47 @@ repositories {
     jcenter()
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/netomi/sudoku-solver")
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
-            }
-        }
-    }
-    publications {
-        gpr(MavenPublication) {
-            from(components.kotlin)
+afterEvaluate {
+    project.publishing.publications.all {
+        // rename artifacts
+        groupId = GROUP_ID
+        if (it.name.contains('metadata')) {
+            artifactId = "$ARTIFACT_ID"
+        } else {
+            artifactId = "$ARTIFACT_ID-$name"
         }
     }
 }
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key  = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    publish = false
+
+    pkg {
+        repo = BINTRAY_REPOSITORY
+        name = "$GROUP_ID:$ARTIFACT_ID"
+        userOrg = BINTRAY_ORGANIZATION
+        licenses = ['GPL-2.0']
+        vcsUrl = VCS_URL
+        websiteUrl = SITE_URL
+        issueTrackerUrl = ISSUE_URL
+
+        version {
+            name = LIBRARY_VERSION_NAME
+            vcsTag = LIBRARY_VERSION_NAME
+            released = new Date()
+        }
+    }
+}
+
+bintrayUpload.doFirst {
+    publications = publishing.publications.collect {
+        it.name
+    }.findAll {
+        it != "kotlinMultiplatform"
+    }
+}
+
+bintrayUpload.dependsOn publishToMavenLocal
