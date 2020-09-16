@@ -40,3 +40,13 @@ class XYZWingFinderTest : BaseHintFinderTest() {
         return testCase.technique.startsWith("0801")
     }
 }
+
+class WWingFinderTest : BaseHintFinderTest() {
+    override fun createHintFinder(): HintFinder {
+        return WWingFinder()
+    }
+
+    override fun matches(testCase: TechniqueTestCase): Boolean {
+        return testCase.technique.startsWith("0803")
+    }
+}

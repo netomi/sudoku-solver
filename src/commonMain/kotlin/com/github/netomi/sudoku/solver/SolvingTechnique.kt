@@ -64,6 +64,7 @@ enum class SolvingTechnique(val techniqueName: String, val supplier: () -> HintF
     // Wings.
     XY_WING("XY-Wing", ::XYWingFinder),
     XYZ_WING("XYZ-Wing", ::XYZWingFinder),
+    W_WING("W-Wing", ::WWingFinder),
 
     // Chains.
     REMOTE_PAIR("Remote Pair", ::RemotePairFinder),

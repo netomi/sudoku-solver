@@ -20,10 +20,8 @@
 package com.github.netomi.sudoku.solver.techniques
 
 import com.github.netomi.sudoku.model.*
+import com.github.netomi.sudoku.solver.*
 import com.github.netomi.sudoku.solver.BaseHintFinder
-import com.github.netomi.sudoku.solver.HintAggregator
-import com.github.netomi.sudoku.solver.HintFinder
-import com.github.netomi.sudoku.solver.SolvingTechnique
 
 /**
  * A [HintFinder] implementation ...
@@ -95,6 +93,81 @@ class XYZWingFinder : BaseWingFinder()
 
         val pivotValueSet = pivotCell.possibleValueSet
         return if (x != y && pivotValueSet[x] && pivotValueSet[y]) XYZ(x, y, z) else null
+    }
+}
+
+/**
+ * A [HintFinder] implementation ...
+ */
+class WWingFinder : BaseHintFinder
+{
+    override val solvingTechnique: SolvingTechnique
+        get() = SolvingTechnique.W_WING
+
+    private fun isPotentialPivotCell(cell: Cell): Boolean {
+        return cell.possibleValueSet.cardinality() == 2
+    }
+
+    override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
+        for (pivotCell in grid.unassignedCells().filter(this::isPotentialPivotCell)) {
+            for (candidate in pivotCell.possibleValueSet.allSetBits()) {
+                for (peerCell in pivotCell.unassignedPeers().filter { it.possibleValueSet[candidate] }) {
+                    for (linkedCell in getStronglyLinkedCells(peerCell, candidate)) {
+                        for (endCell in getEndCells(pivotCell, linkedCell)) {
+                            val matchingCells = MutableCellSet.of(pivotCell, endCell, peerCell, linkedCell)
+                            val matchingValues = pivotCell.possibleValueSet.copy()
+
+                            val affectedCells = getCombinedPeers(pivotCell, endCell)
+                            affectedCells.andNot(matchingCells)
+
+                            val excludedValues = pivotCell.possibleValueSet.toMutableValueSet()
+                            excludedValues.clear(candidate)
+
+                            // TODO: highlight strongly linked values, an elimination hint does not yet support this information
+                            eliminateValuesFromCells(grid, hintAggregator, matchingCells, matchingValues, MutableCellSet.empty(grid), affectedCells, excludedValues)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getCombinedPeers(cell: Cell, otherCell: Cell): MutableCellSet {
+        val peers = cell.peerSet.toMutableCellSet()
+        peers.and(otherCell.peerSet)
+        return peers
+    }
+
+    private fun getStronglyLinkedCells(cell: Cell, candidate: Int): Sequence<Cell> {
+        val cellList = mutableListOf<Cell>()
+
+        for (house in cell.houses()) {
+            val potentialPositionSet = house.getPotentialPositionsAsSet(candidate)
+
+            if (potentialPositionSet.cardinality() != 2) continue
+
+            for (linkedCell in house.cellsExcluding(cell).filter { !it.isAssigned }
+                                                         .filter { it.possibleValueSet[candidate] }) {
+                cellList.add(linkedCell)
+            }
+        }
+
+        return cellList.asSequence()
+    }
+
+    private fun getEndCells(pivotCell: Cell, linkedCell: Cell): Sequence<Cell> {
+        val cellList = mutableListOf<Cell>()
+        val possibleValues = pivotCell.possibleValueSet
+
+        for (cell in linkedCell.unassignedPeers()) {
+            if (possibleValues == cell.possibleValueSet &&
+                cell.cellIndex != pivotCell.cellIndex)
+            {
+                cellList.add(cell)
+            }
+        }
+
+        return cellList.asSequence()
     }
 }
 

@@ -100,11 +100,20 @@ class Cell internal constructor(val owner:       Grid,
     }
 
     /**
-     * Returns a [Sequence] containing all cell that are visible from
+     * Returns a [Sequence] containing all cells that are visible from
      * this cell, i.e. are contained in the same row, column or block.
      */
     fun peers(): Sequence<Cell> {
         return peerSet.allCells(owner)
+    }
+
+    /**
+     * Returns a [Sequence] containing all unassigned cells that are
+     * visible from this cell, i.e. are contained in the same row,
+     * column or block.
+     */
+    fun unassignedPeers(): Sequence<Cell> {
+        return peers().filter { !it.isAssigned }
     }
 
     /**
