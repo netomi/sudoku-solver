@@ -28,35 +28,89 @@ import com.github.netomi.sudoku.solver.SolvingTechnique
 /**
  * A [HintFinder] implementation ...
  */
-class XYWingFinder : BaseHintFinder
+class XYWingFinder : BaseWingFinder()
 {
     override val solvingTechnique: SolvingTechnique
         get() = SolvingTechnique.XY_WING
 
+    override fun isPotentialPivotCell(cell: Cell): Boolean {
+        return isBiValueCell(cell)
+    }
+
+    override fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ? {
+        val z = getZ(pivotCell, pincerOne) ?: return null
+
+        var tmp = pincerOne.possibleValueSet.toMutableValueSet()
+        if (!tmp[z]) return null
+        tmp.clear(z)
+        if (tmp.cardinality() != 1) return null
+        val x = tmp.firstSetBit()
+
+        tmp = pincerTwo.possibleValueSet.toMutableValueSet()
+        if (!tmp[z]) return null
+        tmp.clear(z)
+        if (tmp.cardinality() != 1) return null
+        val y = tmp.firstSetBit()
+
+        val pivotValueSet = pivotCell.possibleValueSet
+        return if (x != y && pivotValueSet[x] && pivotValueSet[y]) XYZ(x, y, z) else null
+    }
+}
+
+/**
+ * A [HintFinder] implementation ...
+ */
+class XYZWingFinder : BaseWingFinder()
+{
+    override val solvingTechnique: SolvingTechnique
+        get() = SolvingTechnique.XYZ_WING
+
+    override fun isPotentialPivotCell(cell: Cell): Boolean {
+        return cell.possibleValueSet.cardinality() == 3
+    }
+
+    override fun getAffectedCells(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): MutableCellSet {
+        val affectedCells = super.getAffectedCells(pivotCell, pincerOne, pincerTwo)
+        affectedCells.and(pivotCell.peerSet)
+        return affectedCells
+    }
+
+    override fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ? {
+        var tmp = pivotCell.possibleValueSet.toMutableValueSet()
+        tmp.and(pincerOne.possibleValueSet)
+        tmp.and(pincerTwo.possibleValueSet)
+
+        if (tmp.cardinality() != 1) return null
+        val z = tmp.firstSetBit()
+
+        tmp = pincerOne.possibleValueSet.toMutableValueSet()
+        tmp.clear(z)
+        if (tmp.cardinality() != 1) return null
+        val x = tmp.firstSetBit()
+
+        tmp = pincerTwo.possibleValueSet.toMutableValueSet()
+        tmp.clear(z)
+        if (tmp.cardinality() != 1) return null
+        val y = tmp.firstSetBit()
+
+        val pivotValueSet = pivotCell.possibleValueSet
+        return if (x != y && pivotValueSet[x] && pivotValueSet[y]) XYZ(x, y, z) else null
+    }
+}
+
+abstract class BaseWingFinder : BaseHintFinder
+{
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        for (cell in grid.unassignedCells()) {
-            val possibleValueSet = cell.possibleValueSet
-            if (possibleValueSet.cardinality() != 2) continue
-
-            val biValueCell: (Cell) -> Boolean = { c -> c.possibleValueSet.cardinality() == 2 }
-
-            for (pincerOne in cell.peers().filter(biValueCell)) {
-                val xz = getXZ(possibleValueSet, pincerOne.possibleValueSet)
-
-                xz?.apply {
-                    val x = this.x
-                    val z = this.z
-
-                    for (pincerTwo in cell.peerSet.allCells(grid, pincerOne.cellIndex + 1).filter(biValueCell)) {
-                        val yz = getXZ(possibleValueSet, pincerTwo.possibleValueSet)
-
-                        yz?.apply {
-                            val y = this.x
-                            val z2 = this.z
-
-                            if (x != y && z == z2) {
-                                foundXYWing(grid, hintAggregator, cell, pincerOne, pincerTwo, cell.peerSet.copy(), z)
-                            }
+        for (pivotCell in grid.unassignedCells().filter(this::isPotentialPivotCell)) {
+            for (pincerOne in pivotCell.peers().filter(this::isBiValueCell)) {
+                if (pivotCell.possibleValueSet.intersects(pincerOne.possibleValueSet)) {
+                    for (pincerTwo in pivotCell.peerSet
+                                               .allCells(grid, pincerOne.cellIndex + 1)
+                                               .filter(this@BaseWingFinder::isBiValueCell))
+                    {
+                        val xyz = getXYZ(pivotCell, pincerOne, pincerTwo)
+                        xyz?.apply {
+                            foundWing(grid, hintAggregator, pivotCell, pincerOne, pincerTwo, pivotCell.peerSet.copy(), xyz)
                         }
                     }
                 }
@@ -64,43 +118,46 @@ class XYWingFinder : BaseHintFinder
         }
     }
 
-    private fun foundXYWing(grid:           Grid,
-                            hintAggregator: HintAggregator,
-                            pivotCell:      Cell,
-                            pincerOne:      Cell,
-                            pincerTwo:      Cell,
-                            relatedCells:   CellSet,
-                            z:              Int)
+    protected abstract fun isPotentialPivotCell(cell: Cell): Boolean
+
+    protected fun isBiValueCell(cell: Cell): Boolean {
+        return cell.possibleValueSet.cardinality() == 2
+    }
+
+    protected abstract fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ?
+
+    protected open fun getAffectedCells(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): MutableCellSet {
+        val affectedCells = pincerOne.peerSet.toMutableCellSet()
+        affectedCells.and(pincerTwo.peerSet)
+        return affectedCells
+    }
+
+    protected fun getZ(pivotCell: Cell, pincerCell: Cell): Int? {
+        val tempValues = pincerCell.possibleValueSet.toMutableValueSet()
+        tempValues.andNot(pivotCell.possibleValueSet)
+
+        return if (tempValues.cardinality() == 1) tempValues.firstSetBit() else null
+    }
+
+    private fun foundWing(grid:           Grid,
+                          hintAggregator: HintAggregator,
+                          pivotCell:      Cell,
+                          pincerOne:      Cell,
+                          pincerTwo:      Cell,
+                          relatedCells:   CellSet,
+                          xyz:            XYZ)
     {
         val matchingCells = MutableCellSet.of(pivotCell, pincerOne, pincerTwo)
         val matchingValues = pivotCell.possibleValueSet.copy()
 
-        val affectedCells = pincerOne.peerSet.toMutableCellSet()
-        affectedCells.and(pincerTwo.peerSet)
+        val affectedCells = getAffectedCells(pivotCell, pincerOne, pincerTwo)
+        affectedCells.andNot(matchingCells)
 
-        val excludedValues = MutableValueSet.of(grid, z)
+        val excludedValues = MutableValueSet.of(grid, xyz.z)
 
         // TODO: highlight the z values, an elimination hint does not yet support this information
         eliminateValuesFromCells(grid, hintAggregator, matchingCells, matchingValues, relatedCells, affectedCells, excludedValues)
     }
 
-    private fun getXZ(pivotCandidates: ValueSet, pincerCandidates: ValueSet): XZ? {
-        if (pincerCandidates.cardinality() != 2) return null
-
-        var tempValues = pincerCandidates.toMutableValueSet()
-        tempValues.andNot(pivotCandidates)
-
-        if (tempValues.cardinality() != 1) return null
-
-        val zCandidate = tempValues.firstSetBit()
-
-        tempValues = pincerCandidates.toMutableValueSet()
-        tempValues.clear(zCandidate)
-
-        val xCandidate = tempValues.firstSetBit()
-
-        return XZ(xCandidate, zCandidate)
-    }
-
-    private class XZ(val x: Int, val z: Int)
+    protected class XYZ(val x: Int, val y: Int, val z: Int)
 }

@@ -4,7 +4,7 @@
   
 ### Added
 - added additional hint solver techniques
-  - wings (xy-wing)
+  - wings (xy-wing, xyz-wing)
 
 ### Changed
   
