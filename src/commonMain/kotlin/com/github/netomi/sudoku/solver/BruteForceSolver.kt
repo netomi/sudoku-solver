@@ -97,7 +97,7 @@ class BruteForceSolver : GridSolver
             val value = when (valueSelection) {
                 ValueSelection.FORWARD ->  possibleValues.firstSetBit()
                 ValueSelection.BACKWARD -> possibleValues.previousSetBit(possibleValues.lastBitIndex)
-                ValueSelection.RANDOM ->   possibleValues.values.shuffled().first()
+                ValueSelection.RANDOM ->   possibleValues.shuffled().first()
             }
 
             possibleValues.clear(value)

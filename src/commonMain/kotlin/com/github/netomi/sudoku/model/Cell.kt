@@ -58,9 +58,6 @@ class Cell internal constructor(val owner:       Grid,
             return _possibleValueSet.asValueSet()
         }
 
-    val possibleValues: Sequence<Int>
-        get() = possibleValueSet.values
-
     private var _excludedValueSet: MutableValueSet = MutableValueSet.empty(owner)
     val excludedValueSet : ValueSet
         get() = _excludedValueSet.asValueSet()

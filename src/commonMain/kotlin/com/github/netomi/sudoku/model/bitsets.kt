@@ -233,11 +233,8 @@ abstract class AbstractBitSetImpl<in T : SimpleBitSet, out R>(final override val
     }
 }
 
-interface ValueSet : SimpleBitSet
+interface ValueSet : SimpleBitSet, Sequence<Int>
 {
-    val values: Sequence<Int>
-        get() = setBits()
-
     fun valuesAfter(value: Int): Sequence<Int> {
         return setBits(value + 1)
     }
@@ -276,6 +273,10 @@ class MutableValueSet : AbstractBitSetImpl<ValueSet, MutableValueSet>, ValueSet
 
     override fun checkInput(bit: Int) {
         require(!(bit < 1 || bit >= size)) { "illegal value $bit" }
+    }
+
+    override fun iterator(): Iterator<Int> {
+        return setBits().iterator()
     }
 
     override fun copy(): MutableValueSet {

@@ -110,7 +110,7 @@ class WWingFinder : BaseHintFinder
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         for (pivotCell in grid.cells.unassigned().filter(this::isPotentialPivotCell)) {
-            for (candidate in pivotCell.possibleValues) {
+            for (candidate in pivotCell.possibleValueSet) {
                 for (peerCell in pivotCell.peers.unassigned().filter { it.possibleValueSet[candidate] }) {
                     for (linkedCell in getStronglyLinkedCells(peerCell, candidate)) {
                         for (endCell in getEndCells(pivotCell, linkedCell)) {

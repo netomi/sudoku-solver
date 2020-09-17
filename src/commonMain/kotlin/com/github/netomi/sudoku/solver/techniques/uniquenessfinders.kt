@@ -161,7 +161,7 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
 
         if (foundCandidateValues.isNotBiValue) return
 
-        for (candidate in expectedPossibleValues.values) {
+        for (candidate in expectedPossibleValues) {
             val cellsWithExtraCandidates = MutableCellSet.of(grid, ur.cellsInSecondHouse.asSequence())
 
             val column = cellsWithExtraCandidates.getSingleColumn(grid)

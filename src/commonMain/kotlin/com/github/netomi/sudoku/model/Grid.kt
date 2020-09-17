@@ -267,7 +267,7 @@ class Grid
         }
 
         for (affectedCell in affectedCells) {
-            for (value in affectedCell._possibleValueSet.values) {
+            for (value in affectedCell._possibleValueSet) {
                 potentialPositions[value - 1].set(affectedCell.cellIndex)
             }
         }
@@ -277,7 +277,7 @@ class Grid
 
     internal fun notifyPossibleValuesChanged(cell: Cell) {
         potentialPositions.forEach { potentialPosition -> potentialPosition.clear(cell.cellIndex) }
-        cell._possibleValueSet.values.forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
+        cell._possibleValueSet.forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
         stateValid = true
     }
 
@@ -311,7 +311,7 @@ class Grid
         // Fourth: refresh all possible positions for each cell.
         potentialPositions.forEach { cellSet -> cellSet.clearAll() }
         cells.forEach { cell ->
-            cell._possibleValueSet.values.forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
+            cell._possibleValueSet.forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
         }
 
         stateValid = true

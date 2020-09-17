@@ -80,7 +80,7 @@ class RemotePairFinder : BaseChainFinder() {
 
             val linkedCandidate = currentChain.lastNode.candidate
             currentChain.addLink(LinkType.WEAK, nextCell.cellIndex, linkedCandidate)
-            val otherCandidate = possibleValuesOfNextCell.values.filter { it != linkedCandidate }.first()
+            val otherCandidate = possibleValuesOfNextCell.filter { it != linkedCandidate }.first()
             currentChain.addLink(LinkType.STRONG, nextCell.cellIndex, otherCandidate)
 
             findChain(grid, hintAggregator, nextCell, currentChain, visitedChains, cellCount + 1)
@@ -98,7 +98,7 @@ class XChainFinder : BaseChainFinder() {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableSet<CellSet> = HashSet()
         grid.cells.unassigned().forEach { cell ->
-            cell.possibleValues.forEach { value ->
+            cell.possibleValueSet.forEach { value ->
                 val chain = Chain(grid, cell.cellIndex, value)
                 findChain(grid, hintAggregator, cell, chain, visitedChains, 1)
             }
@@ -167,9 +167,9 @@ class XYChainFinder : BaseChainFinder() {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableMap<CellSet, MutableSet<Int>> = HashMap()
         grid.cells.unassigned().biValue().forEach { cell ->
-            for (value in cell.possibleValues) {
+            for (value in cell.possibleValueSet) {
                 val chain = Chain(grid, cell.cellIndex, value)
-                val linkedCandidate = cell.possibleValues.filter { candidate -> candidate != value }.first()
+                val linkedCandidate = cell.possibleValueSet.filter { candidate -> candidate != value }.first()
                 chain.addLink(LinkType.STRONG, cell.cellIndex, linkedCandidate)
 
                 findChain(grid, hintAggregator, cell, chain, visitedChains, 1)
@@ -223,7 +223,7 @@ class XYChainFinder : BaseChainFinder() {
             }
 
             currentChain.addLink(LinkType.WEAK, nextCell.cellIndex, linkedCandidate)
-            val otherCandidate = possibleValuesOfNextCell.values.filter { it != linkedCandidate }.first()
+            val otherCandidate = possibleValuesOfNextCell.filter { it != linkedCandidate }.first()
             currentChain.addLink(LinkType.STRONG, nextCell.cellIndex, otherCandidate)
 
             findChain(grid, hintAggregator, nextCell, currentChain, visitedChains, cellCount + 1)
