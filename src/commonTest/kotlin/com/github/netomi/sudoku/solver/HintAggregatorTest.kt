@@ -19,8 +19,8 @@
  */
 package com.github.netomi.sudoku.solver
 
+import com.github.netomi.sudoku.model.CellSet
 import com.github.netomi.sudoku.model.Grid
-import com.github.netomi.sudoku.model.MutableCellSet
 import com.github.netomi.sudoku.model.PredefinedType
 import kotlin.test.*
 
@@ -29,7 +29,7 @@ class HintAggregatorTest {
     fun duplicateHints() {
         val aggregator = HintAggregator()
         val grid: Grid = Grid.of(PredefinedType.CLASSIC_9x9)
-        val hint: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 0, MutableCellSet.empty(grid), 1)
+        val hint: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 0, CellSet.empty(grid), 1)
         aggregator.addHint(hint)
         aggregator.addHint(hint)
         assertEquals(1, aggregator.hints.size)
@@ -39,8 +39,8 @@ class HintAggregatorTest {
     fun differentHints() {
         val aggregator = HintAggregator()
         val grid: Grid = Grid.of(PredefinedType.CLASSIC_9x9)
-        val hint1: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 0, MutableCellSet.empty(grid), 1)
-        val hint2: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 1, MutableCellSet.empty(grid), 2)
+        val hint1: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 0, CellSet.empty(grid), 1)
+        val hint2: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 1, CellSet.empty(grid), 2)
         aggregator.addHint(hint1)
         aggregator.addHint(hint2)
         assertEquals(2, aggregator.hints.size)

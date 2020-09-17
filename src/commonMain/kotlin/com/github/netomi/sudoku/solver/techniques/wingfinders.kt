@@ -114,7 +114,7 @@ class WWingFinder : BaseHintFinder
                 for (peerCell in pivotCell.peers.unassigned().filter { it.possibleValueSet[candidate] }) {
                     for (linkedCell in getStronglyLinkedCells(peerCell, candidate)) {
                         for (endCell in getEndCells(pivotCell, linkedCell)) {
-                            val matchingCells = MutableCellSet.of(pivotCell, endCell, peerCell, linkedCell)
+                            val matchingCells  = CellSet.of(pivotCell, endCell, peerCell, linkedCell)
                             val matchingValues = pivotCell.possibleValueSet.copy()
 
                             val affectedCells = getCombinedPeers(pivotCell, endCell)
@@ -206,13 +206,13 @@ abstract class BaseWingFinder : BaseHintFinder
                           relatedCells:   CellSet,
                           xyz:            XYZ)
     {
-        val matchingCells = MutableCellSet.of(pivotCell, pincerOne, pincerTwo)
+        val matchingCells = CellSet.of(pivotCell, pincerOne, pincerTwo)
         val matchingValues = pivotCell.possibleValueSet.copy()
 
         val affectedCells = getAffectedCells(pivotCell, pincerOne, pincerTwo)
         affectedCells.andNot(matchingCells)
 
-        val excludedValues = MutableValueSet.of(grid, xyz.z)
+        val excludedValues = ValueSet.of(grid, xyz.z)
 
         // TODO: highlight the z values, an elimination hint does not yet support this information
         eliminateValuesFromCells(grid, hintAggregator, matchingCells, matchingValues, relatedCells, affectedCells, excludedValues)

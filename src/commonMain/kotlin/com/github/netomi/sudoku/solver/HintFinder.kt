@@ -58,16 +58,17 @@ internal interface BaseHintFinder : HintFinder
     {
         // only consider cells which have the excluded value as candidate.
         val affectedCells =
-                MutableCellSet.of(grid, affectedHouse.cellsExcluding(excludedHouse)
-                                                     .unassigned()
-                                                     .filter { it.possibleValueSet[excludedValue] })
+                CellSet.of(grid, affectedHouse.cellsExcluding(excludedHouse)
+                                              .unassigned()
+                                              .filter { it.possibleValueSet[excludedValue] })
 
         val matchingCells =
                 CellSet.of(grid, excludedHouse.cells.unassigned()
                                                     .filter { it.possibleValueSet[excludedValue] })
 
-        val eliminations = MutableValueSet.of(grid, excludedValue)
         if (affectedCells.isNotEmpty) {
+            val eliminations = ValueSet.of(grid, excludedValue)
+
             hintAggregator.addHint(
                 EliminationHint(grid.type,
                                 solvingTechnique,

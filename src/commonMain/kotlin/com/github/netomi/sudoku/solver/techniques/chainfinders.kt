@@ -112,7 +112,7 @@ class XChainFinder : BaseChainFinder() {
 
         // to find a x-chain, the chain has to start and end with a strong link.
         if (cellCount >= 4 && currentChain.lastLinkType() == LinkType.STRONG) {
-            val excludedValues = MutableValueSet.of(grid, chainCandidate)
+            val excludedValues = ValueSet.of(grid, chainCandidate)
             val matchingCells = addChainEliminationHint(grid, hintAggregator, currentCell, currentChain, excludedValues)
             matchingCells?.apply { visitedChains.add(this) }
         }
@@ -179,7 +179,7 @@ class XYChainFinder : BaseChainFinder() {
             currentChain.lastLinkType() == LinkType.STRONG &&
             currentChain.lastNode.candidate == currentChain.rootNode.candidate)
         {
-            val excludedValues = MutableValueSet.of(grid, currentChain.rootNode.candidate)
+            val excludedValues = ValueSet.of(grid, currentChain.rootNode.candidate)
             val matchingCells = addChainEliminationHint(grid, hintAggregator, currentCell, currentChain, excludedValues)
             matchingCells?.apply {
                 candidateSet = visitedChains.getOrPut(this, { mutableSetOf() })
@@ -223,7 +223,7 @@ abstract class BaseChainFinder : BaseHintFinder
             val peers = affectedCell.peerSet.toMutableCellSet()
 
             val startCell = currentChain.rootNode.cellIndex
-            val endPoints = MutableCellSet.of(grid.getCell(startCell), currentCell)
+            val endPoints = CellSet.of(grid.getCell(startCell), currentCell)
 
             peers.and(endPoints)
 

@@ -85,7 +85,7 @@ class NakedSingleFinder : BaseHintFinder
             val possibleValues = cell.possibleValueSet
             if (possibleValues.cardinality() == 1) {
                 val value = possibleValues.firstSetBit()
-                placeValueInCell(grid, hintAggregator, cell.cellIndex, MutableCellSet.of(cell), value)
+                placeValueInCell(grid, hintAggregator, cell.cellIndex, CellSet.of(cell), value)
             }
         }
     }

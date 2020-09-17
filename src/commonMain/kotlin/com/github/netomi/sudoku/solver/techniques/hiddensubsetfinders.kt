@@ -49,7 +49,7 @@ class HiddenPairFinder : BaseHintFinder
                     // If the two bitsets, containing the possible positions for some values,
                     // share the exact same positions, we have found a hidden pair.
                     if (potentialPositions == otherPotentialPositions) {
-                        val allowedValues = MutableValueSet.of(grid, value, otherValue)
+                        val allowedValues = ValueSet.of(grid, value, otherValue)
                         eliminateNotAllowedValuesFromCells(grid, hintAggregator, potentialPositions, allowedValues, house.cellSet)
                     }
                 }

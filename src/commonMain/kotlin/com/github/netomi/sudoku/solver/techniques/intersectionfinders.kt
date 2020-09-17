@@ -102,7 +102,7 @@ open class LockedPairFinder : BaseHintFinder
                     if (possibleValues == otherPossibleValues) {
                         val affectedCells = house.cellSet.toMutableCellSet()
 
-                        val matchingCells = MutableCellSet.of(cell, otherCell)
+                        val matchingCells = CellSet.of(cell, otherCell)
                         val row = matchingCells.getSingleRow(grid)
                         row?.let { affectedCells.or(it.cellSet) }
 

@@ -48,7 +48,7 @@ open class NakedPairFinder : BaseHintFinder
                     // have the same candidates, we have found a naked pair.
                     if (possibleValues == otherPossibleValues) {
                         val affectedCells = house.cellSet.toMutableCellSet()
-                        val matchingCells = MutableCellSet.of(cell, otherCell)
+                        val matchingCells = CellSet.of(cell, otherCell)
                         val relatedCells  = affectedCells.copy()
 
                         affectedCells.clear(cell.cellIndex)

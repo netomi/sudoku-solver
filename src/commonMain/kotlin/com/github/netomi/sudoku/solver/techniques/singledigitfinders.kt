@@ -135,7 +135,7 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
     {
         for (cellInFirstHouse in potentialPositions.cells(grid)) {
             for (cellInSecondHouse in potentialOtherPositions.cells(grid)) {
-                val combinedSet = MutableCellSet.of(cellInFirstHouse, cellInSecondHouse)
+                val combinedSet = CellSet.of(cellInFirstHouse, cellInSecondHouse)
                 val singleHouse = getSingleHouse(grid, house, combinedSet)
 
                 // we found a pair of cells from the two houses that are in the same house.
@@ -147,7 +147,7 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
                     val affectedCells = otherRowCell.peerSet.toMutableCellSet()
                     affectedCells.and(otherColCell.peerSet)
 
-                    val excludedValues = MutableValueSet.of(grid, candidate)
+                    val excludedValues = ValueSet.of(grid, candidate)
 
                     val matchingCells = potentialPositions.toMutableCellSet()
                     matchingCells.or(potentialOtherPositions)

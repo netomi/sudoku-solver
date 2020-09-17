@@ -61,15 +61,15 @@ class UniqueRectangleType1Finder : BaseUniqueRectangleHintFinder()
 
         // we have found an UR of type 1
         if (cellWithEqualCandidates != null && cellWithAdditionalCandidates != null) {
-            val matchingCells = MutableCellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
+            val matchingCells = CellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
 
             eliminateValuesFromCells(grid,
-                    hintAggregator,
-                    matchingCells,
-                    expectedPossibleValues.copy(),
-                    MutableCellSet.empty(grid),
-                    MutableCellSet.of(cellWithAdditionalCandidates),
-                    expectedPossibleValues.copy())
+                                     hintAggregator,
+                                     matchingCells,
+                                     expectedPossibleValues.copy(),
+                                     CellSet.empty(grid),
+                                     CellSet.of(cellWithAdditionalCandidates),
+                                     expectedPossibleValues.copy())
         }
     }
 }
@@ -109,7 +109,7 @@ class UniqueRectangleType2Finder : BaseUniqueRectangleHintFinder()
 
         // we have found an UR of type 2
         additionalCandidate?.apply {
-            val matchingCells = MutableCellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
+            val matchingCells = CellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
 
             val affectedCells = MutableCellSet.empty(grid)
             affectedCells.setAll()
@@ -119,12 +119,12 @@ class UniqueRectangleType2Finder : BaseUniqueRectangleHintFinder()
             }
 
             eliminateValuesFromCells(grid,
-                    hintAggregator,
-                    matchingCells,
-                    expectedPossibleValues.copy(),
-                    affectedCells,
-                    affectedCells,
-                    MutableValueSet.of(grid, this))
+                                     hintAggregator,
+                                     matchingCells,
+                                     expectedPossibleValues.copy(),
+                                     affectedCells,
+                                     affectedCells,
+                                     ValueSet.of(grid, this))
         }
     }
 }
@@ -160,7 +160,7 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
         if (foundCandidateValues.isNotBiValue) return
 
         for (candidate in expectedPossibleValues) {
-            val cellsWithExtraCandidates = MutableCellSet.of(grid, ur.cellsInSecondHouse.asSequence())
+            val cellsWithExtraCandidates = CellSet.of(grid, ur.cellsInSecondHouse.asSequence())
 
             val column = cellsWithExtraCandidates.getSingleColumn(grid)
             val row = cellsWithExtraCandidates.getSingleRow(grid)
@@ -170,7 +170,7 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
                 val potentialPositions = it.getPotentialPositionsAsSet(candidate).toMutableCellSet()
                 potentialPositions.andNot(cellsWithExtraCandidates)
                 if (potentialPositions.isEmpty) {
-                    val matchingCells = MutableCellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
+                    val matchingCells = CellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
 
                     val excludedValues = expectedPossibleValues.toMutableValueSet()
                     excludedValues.clear(candidate)
@@ -230,7 +230,7 @@ abstract class BaseUniqueRectangleHintFinder : BaseHintFinder
             }
 
             if (correspondingCells.size == 2) {
-                val urCellSet = MutableCellSet.of(cell, otherCell, correspondingCells[0], correspondingCells[1])
+                val urCellSet = CellSet.of(cell, otherCell, correspondingCells[0], correspondingCells[1])
                 if (urCellSet.toBlockSet(grid).isBiValue) {
                     foundPossibleUniqueRectangle(grid, hintAggregator, UR(mutableListOf(cell, otherCell), correspondingCells))
                 }
