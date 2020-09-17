@@ -37,12 +37,12 @@ class FullHouseFinder : BaseHintFinder
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val expectedCardinality = grid.gridSize - 1
 
-        grid.acceptHouses { house ->
+        grid.houses.unsolved().forEach { house ->
             val assignedValues = house.assignedValueSet
             if (assignedValues.cardinality() == expectedCardinality) {
                 val value = assignedValues.firstUnsetBit()
                 // Create a hint for the unassigned cell.
-                val cell = house.unassignedCells().first()
+                val cell = house.cells.unassigned().first()
                 placeValueInCell(grid, hintAggregator, cell.cellIndex, house.cellSet, value)
             }
         }
@@ -59,8 +59,8 @@ class HiddenSingleFinder : BaseHintFinder
         get() = SolvingTechnique.HIDDEN_SINGLE
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.acceptHouses { house ->
-            for (value in house.unassignedValues()) {
+        grid.houses.unsolved().forEach { house ->
+            house.unassignedValues().forEach { value ->
                 val possiblePositions = house.getPotentialPositionsAsSet(value)
                 if (possiblePositions.cardinality() == 1) {
                     val cellIndex = possiblePositions.firstSetBit()
@@ -81,7 +81,7 @@ class NakedSingleFinder : BaseHintFinder
         get() = SolvingTechnique.NAKED_SINGLE
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.unassignedCells().forEach { cell ->
+        grid.cells.unassigned().forEach { cell ->
             val possibleValues = cell.possibleValueSet
             if (possibleValues.cardinality() == 1) {
                 val value = possibleValues.firstSetBit()

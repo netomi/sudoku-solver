@@ -32,7 +32,7 @@ class RemotePairFinder : BaseChainFinder() {
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableSet<CellSet> = HashSet()
-        grid.unassignedCells().forEach { cell ->
+        grid.cells.unassigned().forEach { cell ->
             val possibleValues = cell.possibleValueSet
             if (possibleValues.cardinality() == 2) {
                 // initial chain setup
@@ -65,7 +65,7 @@ class RemotePairFinder : BaseChainFinder() {
             matchingCells?.apply { visitedChains.add(this) }
         }
 
-        for (nextCell in currentCell.peers()) {
+        for (nextCell in currentCell.peers.unassigned()) {
             if (currentChain.contains(nextCell)) {
                 continue
             }
@@ -97,7 +97,7 @@ class XChainFinder : BaseChainFinder() {
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableSet<CellSet> = HashSet()
-        grid.unassignedCells().forEach { cell ->
+        grid.cells.unassigned().forEach { cell ->
             val possibleValues = cell.possibleValueSet
             for (value in possibleValues.allSetBits()) {
                 val chain = Chain(grid, cell.cellIndex, value)
@@ -129,7 +129,7 @@ class XChainFinder : BaseChainFinder() {
 
         val nextLinkType = currentChain.lastLinkType()?.opposite() ?: LinkType.STRONG
 
-        for (house in currentCell.houses()) {
+        for (house in currentCell.houses) {
             val potentialPositionSet = house.getPotentialPositionsAsSet(chainCandidate)
 
             if (potentialPositionSet.cardinality() <= 1) {
@@ -167,7 +167,7 @@ class XYChainFinder : BaseChainFinder() {
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableMap<CellSet, MutableSet<Int>> = HashMap()
-        grid.unassignedCells().forEach { cell ->
+        grid.cells.unassigned().forEach { cell ->
             val possibleValues = cell.possibleValueSet
             if (possibleValues.cardinality() == 2) {
                 for (value in possibleValues.allSetBits()) {
@@ -212,7 +212,7 @@ class XYChainFinder : BaseChainFinder() {
             }
         }
 
-        for (nextCell in currentCell.peers()) {
+        for (nextCell in currentCell.peers) {
             if (currentChain.contains(nextCell)) {
                 continue
             }
@@ -248,7 +248,7 @@ abstract class BaseChainFinder : BaseHintFinder
         val affectedCells = currentCell.peerSet.toMutableCellSet()
         affectedCells.andNot(currentChain.cellSet)
 
-        for (affectedCell in affectedCells.allCells(grid)) {
+        for (affectedCell in affectedCells.cells(grid)) {
             val peers = affectedCell.peerSet.toMutableCellSet()
 
             val startCell = currentChain.rootNode.cellIndex

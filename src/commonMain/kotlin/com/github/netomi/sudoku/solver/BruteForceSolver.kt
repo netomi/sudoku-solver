@@ -21,6 +21,7 @@ package com.github.netomi.sudoku.solver
 
 import com.github.netomi.sudoku.model.Cell
 import com.github.netomi.sudoku.model.Grid
+import com.github.netomi.sudoku.model.unassigned
 import com.github.netomi.sudoku.solver.techniques.HiddenSingleFinder
 import com.github.netomi.sudoku.solver.techniques.NakedSingleFinder
 
@@ -51,7 +52,7 @@ class BruteForceSolver : GridSolver
         val searchGrid = grid.copy()
         val cellSet: MutableSet<Cell> = LinkedHashSet()
 
-        searchGrid.unassignedCells().forEach { cell -> cellSet.add(cell) }
+        searchGrid.cells.unassigned().forEach { cell -> cellSet.add(cell) }
         solveRecursive(searchGrid, cellSet, valueSelection)
 
         return searchGrid

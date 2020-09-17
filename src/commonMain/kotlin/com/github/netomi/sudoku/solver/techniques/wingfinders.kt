@@ -32,7 +32,7 @@ class XYWingFinder : BaseWingFinder()
         get() = SolvingTechnique.XY_WING
 
     override fun isPotentialPivotCell(cell: Cell): Boolean {
-        return isBiValueCell(cell)
+        return cell.biValue
     }
 
     override fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ? {
@@ -109,9 +109,9 @@ class WWingFinder : BaseHintFinder
     }
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        for (pivotCell in grid.unassignedCells().filter(this::isPotentialPivotCell)) {
+        for (pivotCell in grid.cells.unassigned().filter(this::isPotentialPivotCell)) {
             for (candidate in pivotCell.possibleValueSet.allSetBits()) {
-                for (peerCell in pivotCell.unassignedPeers().filter { it.possibleValueSet[candidate] }) {
+                for (peerCell in pivotCell.peers.unassigned().filter { it.possibleValueSet[candidate] }) {
                     for (linkedCell in getStronglyLinkedCells(peerCell, candidate)) {
                         for (endCell in getEndCells(pivotCell, linkedCell)) {
                             val matchingCells = MutableCellSet.of(pivotCell, endCell, peerCell, linkedCell)
@@ -141,15 +141,13 @@ class WWingFinder : BaseHintFinder
     private fun getStronglyLinkedCells(cell: Cell, candidate: Int): Sequence<Cell> {
         val cellList = mutableListOf<Cell>()
 
-        for (house in cell.houses()) {
+        for (house in cell.houses) {
             val potentialPositionSet = house.getPotentialPositionsAsSet(candidate)
-
             if (potentialPositionSet.cardinality() != 2) continue
 
-            for (linkedCell in house.cellsExcluding(cell).filter { !it.isAssigned }
-                                                         .filter { it.possibleValueSet[candidate] }) {
-                cellList.add(linkedCell)
-            }
+            cellList.addAll(house.cellsExcluding(cell)
+                                 .unassigned()
+                                 .filter { it.possibleValueSet[candidate] })
         }
 
         return cellList.asSequence()
@@ -157,15 +155,10 @@ class WWingFinder : BaseHintFinder
 
     private fun getEndCells(pivotCell: Cell, linkedCell: Cell): Sequence<Cell> {
         val cellList = mutableListOf<Cell>()
-        val possibleValues = pivotCell.possibleValueSet
 
-        for (cell in linkedCell.unassignedPeers()) {
-            if (possibleValues == cell.possibleValueSet &&
-                cell.cellIndex != pivotCell.cellIndex)
-            {
-                cellList.add(cell)
-            }
-        }
+        cellList.addAll(linkedCell.peers.unassigned()
+                                        .excluding(pivotCell)
+                                        .filter { pivotCell.possibleValueSet == it.possibleValueSet })
 
         return cellList.asSequence()
     }
@@ -174,13 +167,10 @@ class WWingFinder : BaseHintFinder
 abstract class BaseWingFinder : BaseHintFinder
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        for (pivotCell in grid.unassignedCells().filter(this::isPotentialPivotCell)) {
-            for (pincerOne in pivotCell.peers().filter(this::isBiValueCell)) {
+        for (pivotCell in grid.cells.unassigned().filter(this::isPotentialPivotCell)) {
+            for (pincerOne in pivotCell.peers.biValue()) {
                 if (pivotCell.possibleValueSet.intersects(pincerOne.possibleValueSet)) {
-                    for (pincerTwo in pivotCell.peerSet
-                                               .allCells(grid, pincerOne.cellIndex + 1)
-                                               .filter(this@BaseWingFinder::isBiValueCell))
-                    {
+                    for (pincerTwo in pivotCell.peers.after(pincerOne).biValue()) {
                         val xyz = getXYZ(pivotCell, pincerOne, pincerTwo)
                         xyz?.apply {
                             foundWing(grid, hintAggregator, pivotCell, pincerOne, pincerTwo, pivotCell.peerSet.copy(), xyz)
@@ -192,10 +182,6 @@ abstract class BaseWingFinder : BaseHintFinder
     }
 
     protected abstract fun isPotentialPivotCell(cell: Cell): Boolean
-
-    protected fun isBiValueCell(cell: Cell): Boolean {
-        return cell.possibleValueSet.cardinality() == 2
-    }
 
     protected abstract fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ?
 

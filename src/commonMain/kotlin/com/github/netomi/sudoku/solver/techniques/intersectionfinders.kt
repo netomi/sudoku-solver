@@ -96,16 +96,11 @@ open class LockedPairFinder : BaseHintFinder
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.acceptBlocks { house ->
-            for (cell in house.cells()) {
+            for (cell in house.cells.biValue()) {
                 val possibleValues = cell.possibleValueSet
-                if (possibleValues.cardinality() != 2) {
-                    continue
-                }
-                for (otherCell in house.cells(cell.cellIndex + 1)) {
+
+                for (otherCell in house.cells.after(cell).biValue()) {
                     val otherPossibleValues = otherCell.possibleValueSet
-                    if (otherPossibleValues.cardinality() != 2) {
-                        continue
-                    }
 
                     // If the two [CellSet]s containing the possible candidate values
                     // have the same candidates, we potentially have found a locked pair.
@@ -153,8 +148,8 @@ class LockedTripleFinder : BaseHintFinder {
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.acceptBlocks { house ->
-            if (!house.isSolved) {
-                for (cell in house.unassignedCells()) {
+            if (!house.solved) {
+                for (cell in house.cells.unassigned()) {
                     findSubset(grid,
                                hintAggregator,
                                house,
@@ -212,14 +207,14 @@ class LockedTripleFinder : BaseHintFinder {
         }
 
         var foundHint = false
-        for (nextCell in house.unassignedCells(currentCell.cellIndex + 1)) {
+        house.cells.after(currentCell).unassigned().forEach { nextCell ->
             foundHint = foundHint or findSubset(grid,
-                    hintAggregator,
-                    house,
-                    visitedCells,
-                    nextCell,
-                    allVisitedValues,
-                    level + 1)
+                                                hintAggregator,
+                                                house,
+                                                visitedCells,
+                                                nextCell,
+                                                allVisitedValues,
+                                                level + 1)
         }
 
         visitedCells.clear(currentCell.cellIndex)

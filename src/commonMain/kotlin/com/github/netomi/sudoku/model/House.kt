@@ -83,28 +83,10 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
     }
 
     /**
-     * Returns a [Sequence] containing all cells of this [House],
-     * whose cell index is >= startIndex.
+     * Returns a [Sequence] containing all cells of this [House].
      */
-    fun cells(startIndex: Int = 0): Sequence<Cell> {
-        return cellSet.allCells(owner, startIndex)
-    }
-
-    /**
-     * Returns a [Sequence] containing all assigned cells of this [House],
-     * whose cell index is >= startIndex.
-     */
-    fun assignedCells(startIndex: Int = 0): Sequence<Cell> {
-        return cellSet.filteredCells(owner, { obj: Cell -> obj.isAssigned }, startIndex)
-    }
-
-    /**
-     * Returns a [Sequence] containing all unassigned cells of this [House],
-     * whose cell index is >= startIndex.
-     */
-    fun unassignedCells(startIndex: Int = 0): Sequence<Cell> {
-        return cellSet.filteredCells(owner, { cell -> !cell.isAssigned }, startIndex)
-    }
+    val cells: Sequence<Cell>
+        get() = cellSet.cells(owner)
 
     /**
      * Returns a [Sequence] containing all cells of this [House]
@@ -112,10 +94,8 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
      */
     fun cellsExcluding(vararg excludedHouses: House): Sequence<Cell> {
         val filteredCells = cellSet.toMutableCellSet()
-        for (house in excludedHouses) {
-            filteredCells.andNot(house.cellSet)
-        }
-        return filteredCells.allCells(owner)
+        excludedHouses.forEach { filteredCells.andNot(it.cellSet) }
+        return filteredCells.cells(owner)
     }
 
     /**
@@ -124,10 +104,8 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
      */
     fun cellsExcluding(vararg excludedCells: Cell): Sequence<Cell> {
         val filteredCells = cellSet.toMutableCellSet()
-        for (cell in excludedCells) {
-            filteredCells.clear(cell.cellIndex)
-        }
-        return filteredCells.allCells(owner)
+        excludedCells.forEach { filteredCells.clear(it.cellIndex) }
+        return filteredCells.cells(owner)
     }
 
     /**
@@ -137,7 +115,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
     fun cellsExcluding(excludedCells: CellSet): Sequence<Cell> {
         val filteredCells = cellSet.toMutableCellSet()
         filteredCells.andNot(excludedCells)
-        return filteredCells.allCells(owner)
+        return filteredCells.cells(owner)
     }
 
     /**
@@ -146,7 +124,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
     val isValid: Boolean
         get() {
             val foundValues = MutableValueSet.empty(owner)
-            for (cell in assignedCells()) {
+            for (cell in cells.assigned()) {
                 if (!foundValues[cell.value]) {
                     foundValues.set(cell.value)
                 } else {
@@ -159,7 +137,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
     /**
      * Checks whether all cells in this [House] have unique values assigned.
      */
-    val isSolved: Boolean
+    val solved: Boolean
         get() = assignedValueSet.cardinality() == owner.gridSize
 
     fun assignedValues(): Iterable<Int> {
@@ -181,7 +159,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
      * @param value the value to check for
      */
     fun potentialCells(value: Int): Sequence<Cell> {
-        return getPotentialPositionsAsSet(value).allCells(owner)
+        return getPotentialPositionsAsSet(value).cells(owner)
     }
 
     fun getPotentialPositionsAsSet(value: Int): CellSet {
@@ -194,7 +172,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
 
     internal fun updateAssignedValues() {
         _assignedValueSet.clearAll()
-        for (cell in assignedCells()) {
+        for (cell in cells.assigned()) {
             _assignedValueSet.set(cell.value)
         }
     }
@@ -204,7 +182,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
     }
 
     internal fun updatePossibleValuesInCells() {
-        unassignedCells().forEach { cell -> cell.updatePossibleValues(_assignedValueSet) }
+        cells.unassigned().forEach { cell -> cell.updatePossibleValues(_assignedValueSet) }
     }
 
     internal fun clear() {

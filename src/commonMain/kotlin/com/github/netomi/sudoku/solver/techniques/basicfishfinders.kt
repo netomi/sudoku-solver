@@ -50,7 +50,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
-            if (!house.isSolved) {
+            if (!house.solved) {
                 for (value in house.unassignedValues()) {
                     findBaseSet(grid,
                                 hintAggregator,
@@ -110,9 +110,8 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
         }
 
         var foundHint = false
-        for (nextHouse in grid.regionsAfter(house)) {
-            if (!nextHouse.isSolved &&
-                !nextHouse.assignedValueSet[value]) {
+        grid.regionsAfter(house).unsolved().forEach { nextHouse ->
+            if (!nextHouse.assignedValueSet[value]) {
                 foundHint = foundHint or findBaseSet(grid, hintAggregator, visitedRegions, nextHouse, value, mergedCoverSet, level + 1)
             }
         }

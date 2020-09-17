@@ -49,7 +49,7 @@ class Cell internal constructor(val owner:       Grid,
     /**
      * Indicates whether the cell has a fixed value.
      */
-    var isGiven: Boolean = false
+    var given: Boolean = false
 
     internal var _possibleValueSet: MutableValueSet = MutableValueSet.fullySet(owner)
     val possibleValueSet: ValueSet
@@ -83,8 +83,34 @@ class Cell internal constructor(val owner:       Grid,
     /**
      * Returns whether a value has been assigned to this cell.
      */
-    val isAssigned: Boolean
+    val assigned: Boolean
         get() = value > 0
+
+    /**
+     * Returns whether the cell is exactly two candidates left.
+     */
+    val biValue: Boolean
+        get() = possibleValueSet.cardinality() == 2
+
+    /**
+     * Returns a [Sequence] containing all cells that are visible from
+     * this cell, i.e. are contained in the same row, column or block.
+     */
+    val peers: Sequence<Cell>
+        get() = peerSet.cells(owner)
+
+    /**
+     * Returns a [Sequence] of all [House]s this cell is contained in.
+     */
+    val houses: Sequence<House>
+        get() = sequenceOf(row, column, block)
+
+    /**
+     * Returns the name of this cell in format rXcY, where X and Y are
+     * respective row and column numbers this cell is contained in.
+     */
+    val name: String
+        get() = "r${rowIndex + 1}c${columnIndex + 1}"
 
     private constructor(grid: Grid, otherCell: Cell)
             :this(grid,
@@ -93,42 +119,11 @@ class Cell internal constructor(val owner:       Grid,
                   otherCell.columnIndex,
                   otherCell.blockIndex)
     {
-        isGiven = otherCell.isGiven
+        given = otherCell.given
         _value  = otherCell._value
         _possibleValueSet = otherCell._possibleValueSet.copy()
         _excludedValueSet = otherCell._excludedValueSet.copy()
     }
-
-    /**
-     * Returns a [Sequence] containing all cells that are visible from
-     * this cell, i.e. are contained in the same row, column or block.
-     */
-    fun peers(): Sequence<Cell> {
-        return peerSet.allCells(owner)
-    }
-
-    /**
-     * Returns a [Sequence] containing all unassigned cells that are
-     * visible from this cell, i.e. are contained in the same row,
-     * column or block.
-     */
-    fun unassignedPeers(): Sequence<Cell> {
-        return peers().filter { !it.isAssigned }
-    }
-
-    /**
-     * Returns a [Sequence] of all [House]s this cell is contained in.
-     */
-    fun houses(): Sequence<House> {
-        return sequenceOf(row, column, block)
-    }
-
-    /**
-     * Returns the name of this cell in format rXcY, where X and Y are
-     * respective row and column numbers this cell is contained in.
-     */
-    val name: String
-        get() = "r${rowIndex + 1}c${columnIndex + 1}"
 
     /**
      * Assigns the given value to the current cell.
@@ -142,7 +137,7 @@ class Cell internal constructor(val owner:       Grid,
         require(!(value < 0 || value > owner.gridSize)) {
             "invalid value for cell: $value outside allowed range [0,${owner.gridSize}]"
         }
-        check(!isGiven) { "cell value is fixed" }
+        check(!given) { "cell value is fixed" }
         owner.invalidateState()
         val oldValue = this._value
         this._value = value
@@ -225,7 +220,7 @@ class Cell internal constructor(val owner:       Grid,
     }
 
     internal fun resetPossibleValues() {
-        if (!isAssigned) {
+        if (!assigned) {
             _possibleValueSet.setAll()
             _possibleValueSet.andNot(_excludedValueSet)
         } else {
@@ -244,7 +239,7 @@ class Cell internal constructor(val owner:       Grid,
      */
     fun clear(updateGrid: Boolean = true) {
         owner.invalidateState()
-        isGiven = false
+        given = false
         _possibleValueSet.setAll()
         _excludedValueSet.clearAll()
         setValue(0, updateGrid)
@@ -259,7 +254,7 @@ class Cell internal constructor(val owner:       Grid,
         owner.invalidateState()
         _possibleValueSet.setAll()
         _excludedValueSet.clearAll()
-        if (!isGiven) {
+        if (!given) {
             setValue(0, updateGrid)
         } else if (updateGrid) {
             owner.notifyPossibleValuesChanged(this)
@@ -293,7 +288,7 @@ class Cell internal constructor(val owner:       Grid,
     }
 
     override fun toString(): String {
-        val possibleValues = if (isGiven) "given" else _possibleValueSet.toString()
+        val possibleValues = if (given) "given" else _possibleValueSet.toString()
         return "$name = $value ($possibleValues)"
     }
 }

@@ -198,10 +198,10 @@ abstract class BaseUniqueRectangleHintFinder : BaseHintFinder
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor {  house ->
-            for (cell in house.unassignedCells()) {
+            for (cell in house.cells.unassigned()) {
                 val possibleValues = cell.possibleValueSet
                 if (possibleValues.cardinality() == 2) {
-                    for (otherCell in house.unassignedCells(cell.cellIndex + 1)) {
+                    for (otherCell in house.cells.after(cell).unassigned()) {
                         val otherPossibleValues = otherCell.possibleValueSet
                         if (otherPossibleValues != possibleValues) continue
 
@@ -244,16 +244,16 @@ abstract class BaseUniqueRectangleHintFinder : BaseHintFinder
 
     private fun getCorrespondingHouses(grid: Grid, house: House): Sequence<House> {
         return when(house.type) {
-            HouseType.ROW    -> grid.rows()
-            HouseType.COLUMN -> grid.columns()
+            HouseType.ROW    -> grid.rows
+            HouseType.COLUMN -> grid.columns
             else             -> error("unexpected house type ${house.type}")
-        }.asSequence().filter { it. regionIndex != house.regionIndex }
+        }.filter { it.regionIndex != house.regionIndex }
     }
 
     private fun getCorrespondingCellInOtherHouse(cell: Cell, house: House): Cell {
         return when (house.type) {
-            HouseType.ROW    -> house.cells().filter { it.columnIndex == cell.columnIndex }
-            HouseType.COLUMN -> house.cells().filter { it.rowIndex == cell.rowIndex }
+            HouseType.ROW    -> house.cells.filter { it.columnIndex == cell.columnIndex }
+            HouseType.COLUMN -> house.cells.filter { it.rowIndex == cell.rowIndex }
             else             -> error("unexpected house type ${house.type}")
         }.first()
     }

@@ -27,19 +27,19 @@ class GridTest {
         val grid = Grid.of(PredefinedType.CLASSIC_9x9)
         val row  = grid.getRow(0)
 
-        assertEquals(grid.gridSize, countItems(row.cells()))
+        assertEquals(grid.gridSize, countItems(row.cells))
         grid.getCell(0).value = 1
-        assertEquals(grid.gridSize, countItems(row.cells()))
-        assertEquals(grid.gridSize - 1, countItems(row.unassignedCells()))
-        assertEquals(1, countItems(row.unassignedCells(8)))
+        assertEquals(grid.gridSize, countItems(row.cells))
+        assertEquals(grid.gridSize - 1, countItems(row.cells.unassigned()))
+        assertEquals(1, countItems(row.cells.after(grid.getCell(7)).unassigned()))
 
         for (i in 0 until grid.gridSize) {
             grid.getCell(i).value = i + 1
         }
 
-        assertEquals(grid.gridSize, countItems(row.cells()))
-        assertEquals(0, countItems(row.unassignedCells()))
-        assertEquals(0, countItems(row.unassignedCells(8)))
+        assertEquals(grid.gridSize, countItems(row.cells))
+        assertEquals(0, countItems(row.cells.unassigned()))
+        assertEquals(0, countItems(row.cells.after(grid.getCell(7)).unassigned()))
     }
 
     companion object {

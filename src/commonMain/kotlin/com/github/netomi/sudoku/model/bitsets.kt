@@ -329,24 +329,14 @@ class MutableHouseSet : AbstractBitSetImpl<MutableHouseSet, MutableHouseSet>
 
 interface CellSet : SimpleBitSet
 {
-    fun allCells(grid: Grid, startIndex: Int = 0): Sequence<Cell> {
-        return allSetBits(startIndex)
-                   .asSequence()
-                   .filter { idx -> idx >= startIndex }
-                   .map    { cellIndex -> grid.getCell(cellIndex) }
-    }
-
-    fun filteredCells(grid: Grid, predicate: (Cell) -> Boolean, startIndex: Int = 0): Sequence<Cell> {
-        return allSetBits(startIndex)
-                   .asSequence()
-                   .filter { idx -> idx >= startIndex }
-                   .map    { cellIndex -> grid.getCell(cellIndex) }
-                   .filter(predicate)
+    fun cells(grid: Grid): Sequence<Cell> {
+        return allSetBits().asSequence()
+                           .map { cellIndex -> grid.getCell(cellIndex) }
     }
 
     fun toRowSet(grid: Grid): MutableHouseSet {
         val rows = MutableHouseSet.empty(grid)
-        allCells(grid).forEach { cell -> rows.set(cell.rowIndex) }
+        cells(grid).forEach { cell -> rows.set(cell.rowIndex) }
         return rows
     }
 
@@ -364,7 +354,7 @@ interface CellSet : SimpleBitSet
 
     fun toColumnSet(grid: Grid): MutableHouseSet {
         val columns = MutableHouseSet.empty(grid)
-        allCells(grid).forEach { cell -> columns.set(cell.columnIndex) }
+        cells(grid).forEach { cell -> columns.set(cell.columnIndex) }
         return columns
     }
 
@@ -382,7 +372,7 @@ interface CellSet : SimpleBitSet
 
     fun toBlockSet(grid: Grid): MutableHouseSet {
         val blocks = MutableHouseSet.empty(grid)
-        allCells(grid).forEach { cell -> blocks.set(cell.blockIndex) }
+        cells(grid).forEach { cell -> blocks.set(cell.blockIndex) }
         return blocks
     }
 
@@ -399,7 +389,7 @@ interface CellSet : SimpleBitSet
     }
 
     fun toCellList(grid: Grid): MutableList<Cell> {
-        return allCells(grid).toMutableList()
+        return cells(grid).toMutableList()
     }
 
     fun intersects(other: CellSet): Boolean {
@@ -412,6 +402,20 @@ interface CellSet : SimpleBitSet
 
     fun toMutableCellSet(): MutableCellSet {
         return MutableCellSet(this)
+    }
+
+    companion object {
+        fun empty(grid: Grid): CellSet {
+            return MutableCellSet.empty(grid)
+        }
+
+        fun of(grid: Grid, cells: Sequence<Cell>): CellSet {
+            return MutableCellSet.of(grid, cells)
+        }
+
+        fun of(cell: Cell, vararg otherCells: Cell): CellSet {
+            return MutableCellSet.of(cell, *otherCells)
+        }
     }
 }
 

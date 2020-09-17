@@ -43,7 +43,7 @@ class SkyscraperFinder : BaseSingleDigitFinder()
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
             // find rows for which a possible value has only 2 positions left.
-            if (house.isSolved) return@HouseVisitor
+            if (house.solved) return@HouseVisitor
 
             for (candidate in house.unassignedValues()) {
                 val potentialPositions = house.getPotentialPositionsAsSet(candidate)
@@ -61,7 +61,7 @@ class SkyscraperFinder : BaseSingleDigitFinder()
         return if (house.type == HouseType.ROW) cellSet.getSingleColumn(grid) else cellSet.getSingleRow(grid)
     }
 
-    override fun otherHouses(grid: Grid, house: House): Iterable<House> {
+    override fun otherHouses(grid: Grid, house: House): Sequence<House> {
         return grid.regionsAfter(house)
     }
 }
@@ -83,7 +83,7 @@ class TwoStringKiteFinder : BaseSingleDigitFinder()
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.acceptRows { row ->
-            if (row.isSolved) return@acceptRows
+            if (row.solved) return@acceptRows
 
             // find rows for which a possible value has only 2 positions left.
             for (candidate in row.unassignedValues()) {
@@ -99,14 +99,14 @@ class TwoStringKiteFinder : BaseSingleDigitFinder()
         return cellSet.getSingleBlock(grid)
     }
 
-    override fun otherHouses(grid: Grid, house: House): Iterable<House> {
-        return grid.columns()
+    override fun otherHouses(grid: Grid, house: House): Sequence<House> {
+        return grid.columns
     }
 }
 
 abstract class BaseSingleDigitFinder : BaseHintFinder
 {
-    protected abstract fun otherHouses(grid: Grid, house: House): Iterable<House>
+    protected abstract fun otherHouses(grid: Grid, house: House): Sequence<House>
 
     protected fun findMatchingHouse(grid:               Grid,
                                     hintAggregator:     HintAggregator,
@@ -114,9 +114,7 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
                                     potentialPositions: CellSet,
                                     candidate:          Int)
     {
-        for (otherHouse in otherHouses(grid, house)) {
-            if (otherHouse.isSolved) continue
-
+        for (otherHouse in otherHouses(grid, house).unsolved()) {
             val assignedValues = otherHouse.assignedValueSet
             if (assignedValues[candidate]) continue
 

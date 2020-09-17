@@ -38,12 +38,12 @@ class GridPrinter constructor(private val style: STYLE, private val appendable: 
     }
 
     private fun printOnelineGrid(grid: Grid) {
-        grid.cells().forEach { cell -> appendable.appendLine(cell.value.toString()) }
+        grid.cells.forEach { cell -> appendable.appendLine(cell.value.toString()) }
     }
 
     private fun printSimpleGrid(grid: Grid) {
-        for (row in grid.rows()) {
-            row.cells().forEach { cell -> appendable.append(cell.value.toString()) }
+        for (row in grid.rows) {
+            row.cells.forEach { cell -> appendable.append(cell.value.toString()) }
             appendable.appendLine()
         }
     }

@@ -37,16 +37,11 @@ open class NakedPairFinder : BaseHintFinder
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
-            for (cell in house.cells()) {
+            for (cell in house.cells.biValue()) {
                 val possibleValues = cell.possibleValueSet
-                if (possibleValues.cardinality() != 2) {
-                    continue
-                }
-                for (otherCell in house.cells(cell.cellIndex + 1)) {
+
+                for (otherCell in house.cells.after(cell).biValue()) {
                     val otherPossibleValues = otherCell.possibleValueSet
-                    if (otherPossibleValues.cardinality() != 2) {
-                        continue
-                    }
 
                     // If the two [CellSet]s containing the possible candidate values
                     // have the same candidates, we have found a naked pair.
@@ -97,8 +92,8 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
-            if (!house.isSolved) {
-                for (cell in house.unassignedCells()) {
+            if (!house.solved) {
+                house.cells.unassigned().forEach { cell ->
                     findSubset(grid,
                                hintAggregator,
                                house,
@@ -150,7 +145,7 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
         }
 
         var foundHint = false
-        for (nextCell in house.unassignedCells(currentCell.cellIndex + 1)) {
+        house.cells.after(currentCell).unassigned().forEach { nextCell ->
             foundHint = foundHint or findSubset(grid,
                                                 hintAggregator,
                                                 house,

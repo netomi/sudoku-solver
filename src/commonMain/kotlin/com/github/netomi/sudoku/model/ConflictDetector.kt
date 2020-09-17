@@ -25,11 +25,9 @@ internal class ConflictDetector : GridVisitor<Array<Conflict>>
         val foundConflicts = HashSet<CellSet>()
         val conflicts      = ArrayList<Conflict>()
 
-        for (house in grid.houses()) {
-            for (cell in house.assignedCells()) {
-                val value = cell.value
-
-                val conflictPeers = cell.peerSet.filteredCells(grid, { c -> c.isAssigned && c.value == value })
+        for (house in grid.houses) {
+            for (cell in house.cells.assigned()) {
+                val conflictPeers = cell.peers.filter { it.value == cell.value }
                 val conflictCells = MutableCellSet.of(grid, conflictPeers)
 
                 if (conflictCells.cardinality() > 0) {

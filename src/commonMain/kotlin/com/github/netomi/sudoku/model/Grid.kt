@@ -31,12 +31,12 @@ class Grid
     val cellCount: Int
         get() = type.cellCount
 
-    private val cells: MutableList<Cell>
+    private val _cells: MutableList<Cell>
     private val peerSets: Array<MutableCellSet>
 
-    private val rows:    MutableList<Row>
-    private val columns: MutableList<Column>
-    private val blocks:  MutableList<Block>
+    private val _rows:    MutableList<Row>
+    private val _columns: MutableList<Column>
+    private val _blocks:  MutableList<Block>
 
     private val cellSets: Array<MutableCellSet>
 
@@ -57,19 +57,19 @@ class Grid
         val gridSize  = type.gridSize
         val cellCount = type.cellCount
 
-        cells    = ArrayList(cellCount)
-        peerSets = Array(cellCount) { MutableCellSet.empty(this) }
+        _cells    = ArrayList(cellCount)
+        peerSets  = Array(cellCount) { MutableCellSet.empty(this) }
 
-        rows     = ArrayList(gridSize)
-        columns  = ArrayList(gridSize)
-        blocks   = ArrayList(gridSize)
+        _rows     = ArrayList(gridSize)
+        _columns  = ArrayList(gridSize)
+        _blocks   = ArrayList(gridSize)
         cellSets = Array(3 * gridSize) { MutableCellSet.empty(this) }
 
         var houseIndex = 0
         for (i in 0 until gridSize) {
-            rows.add(Row(this, i, houseIndex++))
-            columns.add(Column(this, i, houseIndex++))
-            blocks.add(Block(this, i, houseIndex++))
+            _rows.add(Row(this, i, houseIndex++))
+            _columns.add(Column(this, i, houseIndex++))
+            _blocks.add(Block(this, i, houseIndex++))
         }
 
         for (i in 0 until cellCount) {
@@ -78,16 +78,16 @@ class Grid
             val blockIndex  = type.getBlockIndex(i)
 
             val cell = Cell(this, i, rowIndex, columnIndex, blockIndex)
-            cells.add(cell)
+            _cells.add(cell)
 
-            addCell(rows[rowIndex].houseIndex, cell)
-            addCell(columns[columnIndex].houseIndex, cell)
+            addCell(_rows[rowIndex].houseIndex, cell)
+            addCell(_columns[columnIndex].houseIndex, cell)
             if (blockIndex >= 0) {
-                addCell(blocks[blockIndex].houseIndex, cell)
+                addCell(_blocks[blockIndex].houseIndex, cell)
             }
         }
 
-        houses().forEach { house: House -> house.cells().forEach { cell: Cell -> addPeers(cell, house.cellSet) } }
+        houses.forEach { house -> house.cells.forEach { cell -> addPeers(cell, house.cellSet) } }
 
         potentialPositions = Array(gridSize) { MutableCellSet.empty(this) }
 
@@ -100,22 +100,22 @@ class Grid
     internal constructor(other: Grid) {
         type = other.type
 
-        cells   = ArrayList(cellCount)
-        rows    = ArrayList(gridSize)
-        columns = ArrayList(gridSize)
-        blocks  = ArrayList(gridSize)
+        _cells   = ArrayList(cellCount)
+        _rows    = ArrayList(gridSize)
+        _columns = ArrayList(gridSize)
+        _blocks  = ArrayList(gridSize)
 
         // structural components are immutable and can be re-used
         peerSets = other.peerSets
         cellSets = other.cellSets
 
         // Copy houses
-        other.rows.forEach    { rows.add(it.copy(this)) }
-        other.columns.forEach { columns.add(it.copy(this)) }
-        other.blocks.forEach  { blocks.add(it.copy(this)) }
+        other._rows.forEach    { _rows.add(it.copy(this)) }
+        other._columns.forEach { _columns.add(it.copy(this)) }
+        other._blocks.forEach  { _blocks.add(it.copy(this)) }
 
         // Copy cells
-        other.cells.forEach { cells.add(it.copy(this)) }
+        other._cells.forEach { _cells.add(it.copy(this)) }
 
         potentialPositions = Array(gridSize) { MutableCellSet.empty(this) }
 
@@ -128,50 +128,35 @@ class Grid
         return Grid(this)
     }
 
-    fun cells(): Iterable<Cell> {
-        return cells
-    }
+    val cells: Sequence<Cell>
+        get() = _cells.asSequence()
 
-    fun assignedCells(): Sequence<Cell> {
-        return cells.asSequence()
-                    .filter { cell -> cell.isAssigned }
-    }
+    val rows: Sequence<Row>
+        get() = _rows.asSequence()
 
-    fun unassignedCells(): Sequence<Cell> {
-        return cells.asSequence()
-                    .filter { cell -> !cell.isAssigned }
-    }
+    val columns: Sequence<Column>
+        get() = _columns.asSequence()
 
-    fun rows(): Iterable<Row> {
-        return rows
-    }
+    val blocks: Sequence<Block>
+        get() = _blocks.asSequence()
 
-    fun columns(): Iterable<Column> {
-        return columns
-    }
+    val houses: Sequence<House>
+        get() = rows + columns + blocks
 
-    fun blocks(): Iterable<Block> {
-        return blocks
-    }
-
-    fun houses(): Iterable<House> {
-        return rows() + columns() + blocks()
-    }
-
-    fun regionsAfter(house: House): Iterable<House> {
+    fun regionsAfter(house: House): Sequence<House> {
         return when (house.type) {
-            HouseType.ROW    -> rows.subList(house.regionIndex + 1, rows.size)
-            HouseType.COLUMN -> columns.subList(house.regionIndex + 1, columns.size)
-            HouseType.BLOCK  -> blocks.subList(house.regionIndex + 1, blocks.size)
-        }
+            HouseType.ROW    -> _rows.subList(house.regionIndex + 1, _rows.size)
+            HouseType.COLUMN -> _columns.subList(house.regionIndex + 1, _columns.size)
+            HouseType.BLOCK  -> _blocks.subList(house.regionIndex + 1, _blocks.size)
+        }.asSequence()
     }
 
     fun getCell(cellIndex: Int): Cell {
-        return cells[cellIndex]
+        return _cells[cellIndex]
     }
 
     fun getCell(row: Int, column: Int): Cell {
-        return cells[type.getCellIndex(row, column)]
+        return _cells[type.getCellIndex(row, column)]
     }
 
     internal fun getPeerSet(cellIndex: Int): CellSet {
@@ -186,15 +171,15 @@ class Grid
     }
 
     fun getRow(rowIndex: Int): Row {
-        return rows[rowIndex]
+        return _rows[rowIndex]
     }
 
     fun getColumn(columnIndex: Int): Column {
-        return columns[columnIndex]
+        return _columns[columnIndex]
     }
 
     fun getBlock(blockIndex: Int): Block {
-        return blocks[blockIndex]
+        return _blocks[blockIndex]
     }
 
     internal fun getCellSet(houseIndex: Int): CellSet {
@@ -211,19 +196,15 @@ class Grid
     /**
      * Returns whether the sudoku grid is fully solved with a valid solution.
      */
-    val isSolved: Boolean
-        get() {
-            return houses().all { house -> house.isSolved }
-        }
+    val solved: Boolean
+        get() = houses.all { it.solved }
 
     /**
      * Returns whether the current state of the sudoku grid is valid wrt the
      * normal sudoku constraints. The grid might not be fully solved yet.
      */
-    val isValid: Boolean
-        get() {
-            return houses().all { house -> house.isValid }
-        }
+    val valid: Boolean
+        get() = houses.all { it.isValid }
 
     val conflicts: Array<Conflict>
         get() = accept(ConflictDetector())
@@ -235,7 +216,7 @@ class Grid
     }
 
     fun acceptCells(visitor: CellVisitor) {
-        cells().forEach { cell -> visitor.visitCell(cell) }
+        cells.forEach { cell -> visitor.visitCell(cell) }
     }
 
     fun acceptRows(visitor: HouseVisitor) {
@@ -271,7 +252,7 @@ class Grid
         cell.block .updateAssignedValues()
 
         // Second: update possible values in affected cells.
-        val affectedCells = sequenceOf(cell) + cell.peers()
+        val affectedCells = sequenceOf(cell) + cell.peers
         for (affectedCell in affectedCells) {
             affectedCell.resetPossibleValues()
             affectedCell.updatePossibleValues(affectedCell.row._assignedValueSet)
@@ -318,18 +299,18 @@ class Grid
         }
 
         // First: reset the possible values in all cells.
-        cells().forEach { obj -> obj.resetPossibleValues() }
+        cells.forEach { obj -> obj.resetPossibleValues() }
 
         // Second: refresh all assigned values in each house.
-        houses().forEach { obj -> obj.updateAssignedValues() }
+        houses.forEach { obj -> obj.updateAssignedValues() }
 
         // Third: remove potential values in each cell which
         //        are already assigned in the houses it is contained.
-        houses().forEach { obj -> obj.updatePossibleValuesInCells() }
+        houses.forEach { obj -> obj.updatePossibleValuesInCells() }
 
         // Fourth: refresh all possible positions for each cell.
         potentialPositions.forEach { obj -> obj.clearAll() }
-        for (cell in cells()) {
+        cells.forEach { cell ->
             for (value in cell._possibleValueSet.allSetBits()) {
                 potentialPositions[value - 1].set(cell.cellIndex)
             }
@@ -339,8 +320,8 @@ class Grid
     }
 
     fun clear(updateGrid: Boolean = true) {
-        cells().forEach  { cell: Cell -> cell.clear(false) }
-        houses().forEach { obj: House -> obj.clear() }
+        cells.forEach  { cell -> cell.clear(false) }
+        houses.forEach { house -> house.clear() }
 
         potentialPositions.forEach { obj: MutableCellSet -> obj.clearAll() }
 
@@ -350,7 +331,7 @@ class Grid
     }
 
     fun reset(updateGrid: Boolean = true) {
-        cells().forEach { obj: Cell -> obj.reset() }
+        cells.forEach { obj: Cell -> obj.reset() }
 
         if (updateGrid) {
             updateState()
@@ -360,7 +341,7 @@ class Grid
     override fun toString(): String {
         val sb = StringBuilder()
         sb.append("Grid [").append(type).append("]:\n")
-        cells().forEach { cell: Cell -> sb.append("  ").append(cell).append("\n") }
+        cells.forEach { cell: Cell -> sb.append("  ").append(cell).append("\n") }
         return sb.toString()
     }
 

@@ -56,26 +56,25 @@ internal interface BaseHintFinder : HintFinder
                                 excludedHouse:  House,
                                 excludedValue:  Int)
     {
-        val cellsToModify = MutableCellSet.empty(grid)
-        for (cell in affectedHouse.cellsExcluding(excludedHouse)) {
-            // only consider cells which have the excluded value as candidate.
-            if (!cell.isAssigned &&
-                cell.possibleValueSet[excludedValue]) {
-                cellsToModify.set(cell.cellIndex)
-            }
-        }
+        // only consider cells which have the excluded value as candidate.
+        val affectedCells =
+                MutableCellSet.of(grid, affectedHouse.cellsExcluding(excludedHouse)
+                                                     .unassigned()
+                                                     .filter { it.possibleValueSet[excludedValue] })
 
-        val affectedCells = MutableCellSet.of(grid, excludedHouse.unassignedCells().filter { it.possibleValueSet[excludedValue] })
+        val matchingCells =
+                CellSet.of(grid, excludedHouse.cells.unassigned()
+                                                    .filter { it.possibleValueSet[excludedValue] })
 
         val eliminations = MutableValueSet.of(grid, excludedValue)
-        if (cellsToModify.cardinality() > 0) {
+        if (affectedCells.cardinality() > 0) {
             hintAggregator.addHint(
                 EliminationHint(grid.type,
                                 solvingTechnique,
-                                affectedCells,
+                                matchingCells,
                                 eliminations,
                                 relatedCells,
-                                cellsToModify,
+                                affectedCells,
                                 eliminations))
         }
     }
@@ -95,7 +94,7 @@ internal interface BaseHintFinder : HintFinder
     {
         val cellsToModify = MutableCellSet.empty(grid)
         val excludedValues: MutableList<ValueSet> = ArrayList()
-        for (cell in affectedCells.filteredCells(grid, { cell -> !cell.isAssigned })) {
+        for (cell in affectedCells.cells(grid).unassigned()) {
             val valuesToExclude = valuesExcluding(cell.possibleValueSet, allowedValues)
             if (valuesToExclude.cardinality() > 0) {
                 cellsToModify.set(cell.cellIndex)
@@ -122,7 +121,13 @@ internal interface BaseHintFinder : HintFinder
                                  affectedCells:  CellSet,
                                  excludedValues: ValueSet): Boolean
     {
-        return eliminateValuesFromCells(grid, hintAggregator, matchingCells, excludedValues, relatedCells, affectedCells, excludedValues)
+        return eliminateValuesFromCells(grid,
+                                        hintAggregator,
+                                        matchingCells,
+                                        excludedValues,
+                                        relatedCells,
+                                        affectedCells,
+                                        excludedValues)
     }
 
     /**
@@ -143,7 +148,7 @@ internal interface BaseHintFinder : HintFinder
         val cellsToModify = MutableCellSet.empty(grid)
         val valuesToExcludeList: MutableList<ValueSet> = ArrayList()
 
-        for (cell in affectedCells.filteredCells(grid, { cell -> !cell.isAssigned })) {
+        for (cell in affectedCells.cells(grid).unassigned()) {
             val valuesToExclude = valuesIncluding(cell.possibleValueSet, excludedValues)
             if (valuesToExclude.cardinality() > 0) {
                 cellsToModify.set(cell.cellIndex)
@@ -185,7 +190,7 @@ internal interface BaseHintFinder : HintFinder
         val cellsToModify = MutableCellSet.empty(grid)
         val valuesToExcludeList: MutableList<ValueSet> = ArrayList()
 
-        for (cell in affectedCells.filteredCells(grid, { cell -> !cell.isAssigned })) {
+        for (cell in affectedCells.cells(grid).unassigned()) {
             val valuesToExclude = valuesIncluding(cell.possibleValueSet, excludedValues)
             if (valuesToExclude.cardinality() > 0) {
                 cellsToModify.set(cell.cellIndex)
@@ -196,13 +201,13 @@ internal interface BaseHintFinder : HintFinder
         return if (cellsToModify.cardinality() > 0) {
             hintAggregator.addHint(
                     ChainEliminationHint(grid.type,
-                            solvingTechnique,
-                            matchingCells,
-                            matchingValues,
-                            relatedCells,
-                            relatedChain,
-                            cellsToModify,
-                            valuesToExcludeList.toTypedArray()))
+                                         solvingTechnique,
+                                         matchingCells,
+                                         matchingValues,
+                                         relatedCells,
+                                         relatedChain,
+                                         cellsToModify,
+                                         valuesToExcludeList.toTypedArray()))
             true
         } else {
             false

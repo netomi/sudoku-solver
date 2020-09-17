@@ -42,7 +42,7 @@ class HintSolver : GridSolver
     override fun solve(grid: Grid): Grid {
         val searchGrid = grid.copy()
 
-        while (!searchGrid.isSolved) {
+        while (!searchGrid.solved) {
             val hintAggregator = SingleHintAggregator()
 
             try {
@@ -68,7 +68,7 @@ class HintSolver : GridSolver
         val searchGrid = grid.copy()
         val allHints   = HintAggregator()
 
-        while (!searchGrid.isSolved) {
+        while (!searchGrid.solved) {
             val hintAggregator = SingleHintAggregator()
             try {
                 for (hintFinder in finderList) {

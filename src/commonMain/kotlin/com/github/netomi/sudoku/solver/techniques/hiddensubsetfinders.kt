@@ -87,7 +87,7 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.acceptHouses(HouseVisitor { house ->
-            if (house.isSolved) {
+            if (house.solved) {
                 return@HouseVisitor
             }
             for (value in house.unassignedValues()) {
@@ -108,7 +108,8 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
                            visitedValues:    MutableValueSet,
                            currentValue:     Int,
                            visitedPositions: MutableCellSet,
-                           level:            Int): Boolean {
+                           level:            Int): Boolean
+    {
         if (level > subSetSize) {
             return false
         }

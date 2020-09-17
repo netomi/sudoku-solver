@@ -27,7 +27,7 @@ class GridValueLoader(private val iterator: Iterator<Char>) : GridVisitor<Grid>
     constructor(input: String) : this(input.asSequence().iterator())
 
     override fun visitGrid(grid: Grid): Grid {
-        for (cell in grid.cells()) {
+        for (cell in grid.cells) {
             var isGiven: Boolean
             while (true) {
                 var ch = nextChar()
@@ -39,10 +39,10 @@ class GridValueLoader(private val iterator: Iterator<Char>) : GridVisitor<Grid>
                 }
                 if (isGiven(ch)) {
                     cell.setValue(("" + ch).toInt(), false)
-                    cell.isGiven = isGiven
+                    cell.given = isGiven
                     break
                 } else if (isUnknownValue(ch)) {
-                    cell.isGiven = false
+                    cell.given = false
                     break
                 }
             }

@@ -102,13 +102,13 @@ open class EliminationHint(type:               Grid.Type,
         }
 
     override fun apply(targetGrid: Grid, updateGrid: Boolean) {
-        for ((index, cell) in affectedCells.allCells(targetGrid).withIndex()) {
+        for ((index, cell) in affectedCells.cells(targetGrid).withIndex()) {
             cell.excludePossibleValues(excludedValues[index], updateGrid)
         }
     }
 
     override fun revert(targetGrid: Grid, updateGrid: Boolean) {
-        for ((index, cell) in affectedCells.allCells(targetGrid).withIndex()) {
+        for ((index, cell) in affectedCells.cells(targetGrid).withIndex()) {
             cell.removeExcludedPossibleValues(excludedValues[index], updateGrid)
         }
     }
