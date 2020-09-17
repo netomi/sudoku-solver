@@ -39,10 +39,10 @@ class GridValueLoader(private val iterator: Iterator<Char>) : GridVisitor<Grid>
                 }
                 if (isGiven(ch)) {
                     cell.setValue(("" + ch).toInt(), false)
-                    cell.given = isGiven
+                    cell.isGiven = isGiven
                     break
                 } else if (isUnknownValue(ch)) {
-                    cell.given = false
+                    cell.isGiven = false
                     break
                 }
             }

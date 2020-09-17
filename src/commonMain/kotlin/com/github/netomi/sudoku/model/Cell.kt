@@ -49,7 +49,7 @@ class Cell internal constructor(val owner:       Grid,
     /**
      * Indicates whether the cell has a fixed value.
      */
-    var given: Boolean = false
+    var isGiven: Boolean = false
 
     internal var _possibleValueSet: MutableValueSet = MutableValueSet.fullySet(owner)
     val possibleValueSet: ValueSet
@@ -131,7 +131,7 @@ class Cell internal constructor(val owner:       Grid,
                   otherCell.columnIndex,
                   otherCell.blockIndex)
     {
-        given = otherCell.given
+        isGiven = otherCell.isGiven
         _value  = otherCell._value
         _possibleValueSet = otherCell._possibleValueSet.copy()
         _excludedValueSet = otherCell._excludedValueSet.copy()
@@ -149,7 +149,7 @@ class Cell internal constructor(val owner:       Grid,
         require(!(value < 0 || value > owner.gridSize)) {
             "invalid value for cell: $value outside allowed range [0,${owner.gridSize}]"
         }
-        check(!given) { "cell value is fixed" }
+        check(!isGiven) { "cell value is fixed" }
         owner.invalidateState()
         val oldValue = this._value
         this._value = value
@@ -251,7 +251,7 @@ class Cell internal constructor(val owner:       Grid,
      */
     fun clear(updateGrid: Boolean = true) {
         owner.invalidateState()
-        given = false
+        isGiven = false
         _possibleValueSet.setAll()
         _excludedValueSet.clearAll()
         setValue(0, updateGrid)
@@ -266,7 +266,7 @@ class Cell internal constructor(val owner:       Grid,
         owner.invalidateState()
         _possibleValueSet.setAll()
         _excludedValueSet.clearAll()
-        if (!given) {
+        if (!isGiven) {
             setValue(0, updateGrid)
         } else if (updateGrid) {
             owner.notifyPossibleValuesChanged(this)
@@ -300,7 +300,7 @@ class Cell internal constructor(val owner:       Grid,
     }
 
     override fun toString(): String {
-        val possibleValues = if (given) "given" else _possibleValueSet.toString()
+        val possibleValues = if (isGiven) "given" else _possibleValueSet.toString()
         return "$name = $value ($possibleValues)"
     }
 }
