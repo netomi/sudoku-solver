@@ -191,7 +191,7 @@ class ChainEliminationHint(type:             Grid.Type,
     }
 }
 
-class Chain() {
+class Chain {
     lateinit var rootNode: ChainNode
         private set
 
@@ -201,14 +201,14 @@ class Chain() {
     lateinit var cellSet: MutableCellSet
         private set
 
-    constructor(grid: Grid, cellIndex: Int, candidate: Int): this() {
+    constructor(grid: Grid, cellIndex: Int, candidate: Int) {
         rootNode = ChainNode(cellIndex, candidate)
         lastNode = rootNode
         cellSet  = MutableCellSet.empty(grid)
         cellSet.set(cellIndex)
     }
 
-    private constructor(other: Chain): this() {
+    private constructor(other: Chain) {
         rootNode = other.rootNode.copy()
         cellSet  = other.cellSet.copy()
 
@@ -316,6 +316,19 @@ class Chain() {
         visitor.visitCell(grid, this, currentCell, activeValues, inactiveValues)
     }
 
+    override fun hashCode(): Int {
+        return rootNode.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Chain) return false
+
+        if (rootNode != other.rootNode) return false
+
+        return true
+    }
+
     fun toString(type: Grid.Type): String {
         return rootNode.toString(type)
     }
@@ -329,6 +342,24 @@ class ChainNode(val cellIndex: Int,
 
     fun copy(): ChainNode {
         return ChainNode(cellIndex, candidate)
+    }
+
+    override fun hashCode(): Int {
+        var result = cellIndex
+        result = 31 * result + candidate
+        result = 31 * result + (nextLink?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ChainNode) return false
+
+        if (cellIndex != other.cellIndex) return false
+        if (candidate != other.candidate) return false
+        if (nextLink != other.nextLink) return false
+
+        return true
     }
 
     fun toString(type: Grid.Type): String {
@@ -349,6 +380,22 @@ class ChainNode(val cellIndex: Int,
 class ChainLink(val linkType: LinkType,
                 val node:     ChainNode)
 {
+    override fun hashCode(): Int {
+        var result = linkType.hashCode()
+        result = 31 * result + node.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ChainLink) return false
+
+        if (linkType != other.linkType) return false
+        if (node != other.node) return false
+
+        return true
+    }
+
     fun toString(type: Grid.Type): String {
         return " ${linkType.symbol} ${node.toString(type)}"
     }

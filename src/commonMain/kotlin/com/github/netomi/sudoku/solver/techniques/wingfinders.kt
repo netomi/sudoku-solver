@@ -104,12 +104,10 @@ class WWingFinder : BaseHintFinder
     override val solvingTechnique: SolvingTechnique
         get() = SolvingTechnique.W_WING
 
-    private fun isPotentialPivotCell(cell: Cell): Boolean {
-        return cell.isBiValue
-    }
-
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        for (pivotCell in grid.cells.unassigned().filter(this::isPotentialPivotCell)) {
+        val visitedChains: MutableSet<CellSet> = HashSet()
+
+        for (pivotCell in grid.cells.unassigned().biValue()) {
             for (candidate in pivotCell.possibleValueSet) {
                 for (peerCell in pivotCell.peers.unassigned().filter { it.possibleValueSet[candidate] }) {
                     for (linkedCell in getStronglyLinkedCells(peerCell, candidate)) {
@@ -123,8 +121,27 @@ class WWingFinder : BaseHintFinder
                             val excludedValues = pivotCell.possibleValueSet.toMutableValueSet()
                             excludedValues.clear(candidate)
 
+                            // add chain for training purposes
+                            val chain = Chain(grid, pivotCell.cellIndex, candidate)
+                            chain.addLink(LinkType.WEAK, peerCell.cellIndex, candidate)
+                            chain.addLink(LinkType.STRONG, linkedCell.cellIndex, candidate)
+                            chain.addLink(LinkType.WEAK, endCell.cellIndex, candidate)
+
+                            // make sure we do not add chains twice: in forward and reverse order
+                            // TODO: take into account the starting candidate value
+                            if (visitedChains.contains(chain.cellSet)) continue
+
                             // TODO: highlight strongly linked values, an elimination hint does not yet support this information
-                            eliminateValuesFromCells(grid, hintAggregator, matchingCells, matchingValues, MutableCellSet.empty(grid), affectedCells, excludedValues)
+                            if (eliminateValuesFromCells(grid,
+                                                         hintAggregator,
+                                                         matchingCells,
+                                                         matchingValues,
+                                                         CellSet.empty(grid),
+                                                         chain,
+                                                         affectedCells,
+                                                         excludedValues)) {
+                                visitedChains.add(chain.cellSet)
+                            }
                         }
                     }
                 }
