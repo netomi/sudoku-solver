@@ -38,10 +38,9 @@ class LockedCandidatesType1Finder : BaseHintFinder
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.acceptBlocks { house ->
             for (value in house.unassignedValues()) {
-                val possiblePositions: CellSet = house.getPotentialPositionsAsSet(value)
-                if (possiblePositions.cardinality() <= 1) {
-                    continue
-                }
+                val possiblePositions = house.getPotentialPositionsAsSet(value)
+                if (possiblePositions.cardinality() <= 1) continue
+
                 // Check if all possible cells are in the same row.
                 val row = possiblePositions.getSingleRow(grid)
                 row?.let { eliminateValueFromCells(grid, hintAggregator, it, house.cellSet, house, value) }
@@ -65,21 +64,17 @@ class LockedCandidatesType2Finder : BaseHintFinder
         get() = SolvingTechnique.LOCKED_CANDIDATES_TYPE_2
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        val visitor = HouseVisitor { house ->
+        // Check all rows and columns.
+        (grid.rows + grid.columns).unsolved().forEach { house ->
             for (value in house.unassignedValues()) {
                 val possiblePositions: CellSet = house.getPotentialPositionsAsSet(value)
-                if (possiblePositions.cardinality() <= 1) {
-                    continue
-                }
+                if (possiblePositions.cardinality() <= 1) continue
+
                 // Check if all possible cells are in the same block.
                 val block = possiblePositions.getSingleBlock(grid)
                 block?.let { eliminateValueFromCells(grid, hintAggregator, block, house.cellSet, house, value) }
             }
         }
-
-        // Check all rows and columns.
-        grid.acceptRows(visitor)
-        grid.acceptColumns(visitor)
     }
 }
 
@@ -95,7 +90,7 @@ open class LockedPairFinder : BaseHintFinder
         get() = SolvingTechnique.LOCKED_PAIR
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.acceptBlocks { house ->
+        grid.blocks.unsolved().forEach { house ->
             for (cell in house.cells.biValue()) {
                 val possibleValues = cell.possibleValueSet
 
@@ -117,9 +112,7 @@ open class LockedPairFinder : BaseHintFinder
                         // if the two cells are neither on the same
                         // row or column, we have not found a locked pair
                         // (just a naked one).
-                        if (row == null && col == null) {
-                            continue
-                        }
+                        if (row == null && col == null) continue
 
                         val relatedCells = affectedCells.copy()
 
@@ -168,15 +161,12 @@ class LockedTripleFinder : BaseHintFinder {
                            visitedValues:  MutableValueSet,
                            level:          Int): Boolean
     {
-        if (level > subSetSize) {
-            return false
-        }
+        if (level > subSetSize) return false
 
         val allVisitedValues = visitedValues.copy()
         allVisitedValues.or(currentCell.possibleValueSet)
-        if (allVisitedValues.cardinality() > subSetSize) {
-            return false
-        }
+        if (allVisitedValues.cardinality() > subSetSize) return false
+
         visitedCells.set(currentCell.cellIndex)
 
         if (level == subSetSize) {

@@ -32,16 +32,15 @@ class RemotePairFinder : BaseChainFinder() {
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableSet<CellSet> = HashSet()
-        grid.cells.unassigned().forEach { cell ->
+        grid.cells.unassigned().biValue().forEach { cell ->
             val possibleValues = cell.possibleValueSet
-            if (possibleValues.isBiValue) {
-                // initial chain setup
-                val firstCandidate = possibleValues.firstSetBit()
-                val chain = Chain(grid, cell.cellIndex, firstCandidate)
-                chain.addLink(LinkType.STRONG, cell.cellIndex, possibleValues.nextSetBit(firstCandidate + 1))
 
-                findChain(grid, hintAggregator, cell, chain, visitedChains, 1)
-            }
+            // initial chain setup
+            val firstCandidate = possibleValues.firstSetBit()
+            val chain = Chain(grid, cell.cellIndex, firstCandidate)
+            chain.addLink(LinkType.STRONG, cell.cellIndex, possibleValues.nextSetBit(firstCandidate + 1))
+
+            findChain(grid, hintAggregator, cell, chain, visitedChains, 1)
         }
     }
 
@@ -53,9 +52,7 @@ class RemotePairFinder : BaseChainFinder() {
                           cellCount:      Int)
     {
         // make sure we do not add chains twice: in forward and reverse order.
-        if (visitedChains.contains(currentChain.cellSet)) {
-            return
-        }
+        if (visitedChains.contains(currentChain.cellSet)) return
 
         // to find a remote pair, the chain has to include at least
         // 4 cells. Also the start / end points of the chain need to
@@ -66,17 +63,13 @@ class RemotePairFinder : BaseChainFinder() {
         }
 
         for (nextCell in currentCell.peers.unassigned()) {
-            if (currentChain.contains(nextCell)) {
-                continue
-            }
+            if (currentChain.contains(nextCell)) continue
 
             val possibleValues           = currentCell.possibleValueSet
             val possibleValuesOfNextCell = nextCell.possibleValueSet
 
             if (possibleValuesOfNextCell.isNotBiValue ||
-                possibleValues != possibleValuesOfNextCell) {
-                continue
-            }
+                possibleValues != possibleValuesOfNextCell) continue
 
             val linkedCandidate = currentChain.lastNode.candidate
             currentChain.addLink(LinkType.WEAK, nextCell.cellIndex, linkedCandidate)
@@ -113,9 +106,7 @@ class XChainFinder : BaseChainFinder() {
                           cellCount:      Int)
     {
         // make sure we do not add chains twice: in forward and reverse order.
-        if (visitedChains.contains(currentChain.cellSet)) {
-            return
-        }
+        if (visitedChains.contains(currentChain.cellSet)) return
 
         val chainCandidate = currentChain.lastNode.candidate
 
@@ -130,10 +121,7 @@ class XChainFinder : BaseChainFinder() {
 
         for (house in currentCell.houses) {
             val potentialPositionSet = house.getPotentialPositionsAsSet(chainCandidate)
-
-            if (potentialPositionSet.cardinality() <= 1) {
-                continue
-            }
+            if (potentialPositionSet.cardinality() <= 1) continue
 
             // if the number of possible positions within a house is equal to 2 we have found
             // a strong link, otherwise its a weak link. Strong links can be downgraded to weak
@@ -143,14 +131,10 @@ class XChainFinder : BaseChainFinder() {
             // if the house does not contain a link of the expected type,
             // no need to look at individual cells. Strong links can be downgraded
             // to weak links if needed.
-            if (possibleLinkType < nextLinkType) {
-                continue
-            }
+            if (possibleLinkType < nextLinkType) continue
 
             for (nextCell in house.potentialCells(chainCandidate)) {
-                if (currentChain.contains(nextCell)) {
-                    continue
-                }
+                if (currentChain.contains(nextCell)) continue
 
                 currentChain.addLink(nextLinkType, nextCell.cellIndex, chainCandidate)
                 findChain(grid, hintAggregator, nextCell, currentChain, visitedChains, cellCount + 1)
@@ -186,14 +170,8 @@ class XYChainFinder : BaseChainFinder() {
     {
         // make sure we do not add chains twice: in forward and reverse order taking
         // into account the starting candidate.
-        run {
-            val candidateSet = visitedChains[currentChain.cellSet]
-            candidateSet?.apply {
-                if (this.contains(currentChain.rootNode.candidate)) {
-                    return
-                }
-            }
-        }
+        var candidateSet = visitedChains[currentChain.cellSet]
+        candidateSet?.apply { if (this.contains(currentChain.rootNode.candidate)) return }
 
         // to find a xy-chain, the chain has to start and end with a strong link.
         // TODO: currently there is a hard-coded chain limit of 10, make this configurable
@@ -204,23 +182,19 @@ class XYChainFinder : BaseChainFinder() {
             val excludedValues = MutableValueSet.of(grid, currentChain.rootNode.candidate)
             val matchingCells = addChainEliminationHint(grid, hintAggregator, currentCell, currentChain, excludedValues)
             matchingCells?.apply {
-                val candidateSet = visitedChains.getOrPut(this, { mutableSetOf() })
-                candidateSet.add(currentChain.rootNode.candidate)
+                candidateSet = visitedChains.getOrPut(this, { mutableSetOf() })
+                candidateSet!!.add(currentChain.rootNode.candidate)
             }
         }
 
         for (nextCell in currentCell.peers) {
-            if (currentChain.contains(nextCell)) {
-                continue
-            }
+            if (currentChain.contains(nextCell)) continue
 
             val linkedCandidate = currentChain.lastNode.candidate
             val possibleValuesOfNextCell = nextCell.possibleValueSet
 
             if (possibleValuesOfNextCell.isNotBiValue ||
-                !possibleValuesOfNextCell[linkedCandidate]) {
-                continue
-            }
+                !possibleValuesOfNextCell[linkedCandidate]) continue
 
             currentChain.addLink(LinkType.WEAK, nextCell.cellIndex, linkedCandidate)
             val otherCandidate = possibleValuesOfNextCell.filter { it != linkedCandidate }.first()

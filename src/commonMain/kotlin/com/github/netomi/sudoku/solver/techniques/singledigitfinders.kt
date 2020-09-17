@@ -41,10 +41,8 @@ class SkyscraperFinder : BaseSingleDigitFinder()
         get() = SolvingTechnique.SKYSCRAPER
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        val visitor = HouseVisitor { house ->
-            // find rows for which a possible value has only 2 positions left.
-            if (house.isSolved) return@HouseVisitor
-
+        (grid.rows + grid.columns).unsolved().forEach { house ->
+            // find houses for which a possible value has only 2 positions left.
             for (candidate in house.unassignedValues()) {
                 val potentialPositions = house.getPotentialPositionsAsSet(candidate)
                 if (potentialPositions.isBiValue) {
@@ -52,9 +50,6 @@ class SkyscraperFinder : BaseSingleDigitFinder()
                 }
             }
         }
-
-        grid.acceptRows(visitor)
-        grid.acceptColumns(visitor)
     }
 
     override fun getSingleHouse(grid: Grid, house: House, cellSet: CellSet): House? {
@@ -83,7 +78,7 @@ class TwoStringKiteFinder : BaseSingleDigitFinder()
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.rows.unsolved().forEach { row ->
-            // find rows for which a possible value has only 2 positions left.
+            // find houses for which a possible value has only 2 positions left.
             for (candidate in row.unassignedValues()) {
                 val potentialPositions = row.getPotentialPositionsAsSet(candidate)
                 if (potentialPositions.isBiValue) {

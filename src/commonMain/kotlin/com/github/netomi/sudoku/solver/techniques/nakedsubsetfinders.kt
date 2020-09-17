@@ -36,7 +36,8 @@ open class NakedPairFinder : BaseHintFinder
         get() = SolvingTechnique.NAKED_PAIR
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        val visitor = HouseVisitor { house ->
+        // look first in blocks to generate fewer hints.
+        (grid.blocks + grid.rows + grid.columns).unsolved().forEach { house ->
             for (cell in house.cells.biValue()) {
                 val possibleValues = cell.possibleValueSet
 
@@ -52,16 +53,16 @@ open class NakedPairFinder : BaseHintFinder
 
                         affectedCells.clear(cell.cellIndex)
                         affectedCells.clear(otherCell.cellIndex)
-                        eliminateValuesFromCells(grid, hintAggregator, matchingCells, relatedCells, affectedCells, possibleValues.copy())
+                        eliminateValuesFromCells(grid,
+                                                 hintAggregator,
+                                                 matchingCells,
+                                                 relatedCells,
+                                                 affectedCells,
+                                                 possibleValues.copy())
                     }
                 }
             }
         }
-
-        // look first in blocks to generate fewer hints.
-        grid.acceptBlocks(visitor)
-        grid.acceptRows(visitor)
-        grid.acceptColumns(visitor)
     }
 }
 
@@ -91,24 +92,18 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
     : BaseHintFinder
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        val visitor = HouseVisitor { house ->
-            if (!house.isSolved) {
-                house.cells.unassigned().forEach { cell ->
-                    findSubset(grid,
-                               hintAggregator,
-                               house,
-                               MutableCellSet.empty(grid),
-                               cell,
-                               MutableValueSet.empty(grid),
-                               1)
-                }
+        // look first in blocks to generate fewer hints.
+        (grid.blocks + grid.rows + grid.columns).unsolved().forEach { house ->
+            house.cells.unassigned().forEach { cell ->
+                findSubset(grid,
+                           hintAggregator,
+                           house,
+                           MutableCellSet.empty(grid),
+                           cell,
+                           MutableValueSet.empty(grid),
+                           1)
             }
         }
-
-        // look first in blocks to generate fewer hints.
-        grid.acceptBlocks(visitor)
-        grid.acceptRows(visitor)
-        grid.acceptColumns(visitor)
     }
 
     private fun findSubset(grid:           Grid,
@@ -119,15 +114,12 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
                            visitedValues:  MutableValueSet,
                            level:          Int): Boolean
     {
-        if (level > subSetSize) {
-            return false
-        }
+        if (level > subSetSize) return false
 
         val allVisitedValues = visitedValues.copy()
         allVisitedValues.or(currentCell.possibleValueSet)
-        if (allVisitedValues.cardinality() > subSetSize) {
-            return false
-        }
+        if (allVisitedValues.cardinality() > subSetSize) return false
+
         visitedCells.set(currentCell.cellIndex)
 
         if (level == subSetSize) {

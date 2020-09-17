@@ -99,10 +99,8 @@ class UniqueRectangleType2Finder : BaseUniqueRectangleHintFinder()
 
                 if (additionalCandidate == null) {
                     additionalCandidate = remainingCandidate
-                } else {
-                    if (remainingCandidate != additionalCandidate) {
-                        return
-                    }
+                } else if (remainingCandidate != additionalCandidate) {
+                    return
                 }
             } else {
                 return

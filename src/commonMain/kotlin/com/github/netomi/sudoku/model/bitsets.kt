@@ -258,6 +258,16 @@ interface ValueSet : SimpleBitSet, Sequence<Int>
     fun toMutableValueSet(): MutableValueSet {
         return MutableValueSet(this)
     }
+
+    companion object {
+        fun empty(grid: Grid): ValueSet {
+            return MutableValueSet.empty(grid)
+        }
+
+        fun of(grid: Grid, vararg values: Int): ValueSet {
+            return MutableValueSet.of(grid, *values)
+        }
+    }
 }
 
 class MutableValueSet : AbstractBitSetImpl<ValueSet, MutableValueSet>, ValueSet

@@ -37,17 +37,14 @@ class HiddenPairFinder : BaseHintFinder
         get() = SolvingTechnique.HIDDEN_PAIR
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.acceptHouses { house ->
+        grid.houses.unsolved().forEach { house ->
             for (value in house.unassignedValues()) {
                 val potentialPositions = house.getPotentialPositionsAsSet(value)
-                if (potentialPositions.isNotBiValue) {
-                    continue
-                }
-                for (otherValue in house.unassignedValues(value + 1)) {
+                if (potentialPositions.isNotBiValue) continue
+
+                for (otherValue in house.unassignedValuesAfter(value)) {
                     val otherPotentialPositions: CellSet = house.getPotentialPositionsAsSet(otherValue)
-                    if (otherPotentialPositions.isNotBiValue) {
-                        continue
-                    }
+                    if (otherPotentialPositions.isNotBiValue) continue
 
                     // If the two bitsets, containing the possible positions for some values,
                     // share the exact same positions, we have found a hidden pair.
@@ -107,16 +104,13 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
                            visitedPositions: MutableCellSet,
                            level:            Int): Boolean
     {
-        if (level > subSetSize) {
-            return false
-        }
+        if (level > subSetSize) return false
 
         val potentialPositions: CellSet = house.getPotentialPositionsAsSet(currentValue)
         val allPotentialPositions = visitedPositions.copy()
         allPotentialPositions.or(potentialPositions)
-        if (allPotentialPositions.cardinality() > subSetSize) {
-            return false
-        }
+        if (allPotentialPositions.cardinality() > subSetSize) return false
+
         visitedValues.set(currentValue)
 
         if (level == subSetSize) {
@@ -130,7 +124,7 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
         }
 
         var foundHint = false
-        for (nextValue in house.unassignedValues(currentValue + 1)) {
+        for (nextValue in house.unassignedValuesAfter(currentValue)) {
             foundHint = foundHint or findSubset(grid,
                                                 hintAggregator,
                                                 house,

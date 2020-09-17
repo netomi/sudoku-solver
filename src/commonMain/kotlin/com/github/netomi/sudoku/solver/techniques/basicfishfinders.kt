@@ -49,21 +49,17 @@ class JellyFishFinder : BasicFishFinder(4) {
 abstract class BasicFishFinder protected constructor(private val size: Int) : BaseHintFinder
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        val visitor = HouseVisitor { house ->
-            if (!house.isSolved) {
-                for (value in house.unassignedValues()) {
-                    findBaseSet(grid,
-                                hintAggregator,
-                                ArrayList(),
-                                house,
-                                value,
-                                MutableHouseSet.empty(grid),
-                                1)
-                }
+        (grid.rows + grid.columns).unsolved().forEach { house ->
+            for (value in house.unassignedValues()) {
+                findBaseSet(grid,
+                            hintAggregator,
+                            ArrayList(),
+                            house,
+                            value,
+                            MutableHouseSet.empty(grid),
+                            1)
             }
         }
-        grid.acceptRows(visitor)
-        grid.acceptColumns(visitor)
     }
 
     private fun findBaseSet(grid:           Grid,
@@ -73,20 +69,14 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
                             value:          Int,
                             coverSet:       MutableHouseSet,
                             level:          Int): Boolean {
-        if (level > size) {
-            return false
-        }
+        if (level > size) return false
 
         val potentialPositions = house.getPotentialPositionsAsSet(value)
-        if (potentialPositions.cardinality() > size) {
-            return false
-        }
+        if (potentialPositions.cardinality() > size) return false
 
         val mergedCoverSet = coverSet.copy()
         mergedCoverSet.or(getCoverSet(grid, house, potentialPositions))
-        if (mergedCoverSet.cardinality() > size) {
-            return false
-        }
+        if (mergedCoverSet.cardinality() > size) return false
 
         visitedRegions.add(house)
         if (level == size) {
@@ -100,7 +90,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
                 matchingCells.or(region.cellSet)
             }
 
-            val excludedValue = MutableValueSet.of(grid, value)
+            val excludedValue = ValueSet.of(grid, value)
 
             // eliminate the detected fish value from all affected cells,
             // affected cells = cells of cover set - cells of base set

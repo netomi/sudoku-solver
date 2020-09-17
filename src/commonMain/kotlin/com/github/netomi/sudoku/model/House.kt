@@ -156,8 +156,8 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
         return assignedValueSet.unsetBits()
     }
 
-    fun unassignedValues(startValue: Int): Sequence<Int> {
-        return assignedValueSet.unsetBits(startValue)
+    fun unassignedValuesAfter(value: Int): Sequence<Int> {
+        return assignedValueSet.unsetBits(value + 1)
     }
 
     /**
