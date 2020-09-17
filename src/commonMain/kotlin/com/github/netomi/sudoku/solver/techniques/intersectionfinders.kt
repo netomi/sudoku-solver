@@ -99,7 +99,7 @@ open class LockedPairFinder : BaseHintFinder
             for (cell in house.cells.biValue()) {
                 val possibleValues = cell.possibleValueSet
 
-                for (otherCell in house.cells.after(cell).biValue()) {
+                for (otherCell in house.cellsAfter(cell).biValue()) {
                     val otherPossibleValues = otherCell.possibleValueSet
 
                     // If the two [CellSet]s containing the possible candidate values
@@ -147,17 +147,15 @@ class LockedTripleFinder : BaseHintFinder {
         get() = SolvingTechnique.LOCKED_TRIPLE
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.acceptBlocks { house ->
-            if (!house.solved) {
-                for (cell in house.cells.unassigned()) {
-                    findSubset(grid,
-                               hintAggregator,
-                               house,
-                               MutableCellSet.empty(grid),
-                               cell,
-                               MutableValueSet.empty(grid),
-                               1)
-                }
+        grid.blocks.unsolved().forEach { house ->
+            for (cell in house.cells.unassigned()) {
+                findSubset(grid,
+                           hintAggregator,
+                           house,
+                           MutableCellSet.empty(grid),
+                           cell,
+                           MutableValueSet.empty(grid),
+                           1)
             }
         }
     }
@@ -207,7 +205,7 @@ class LockedTripleFinder : BaseHintFinder {
         }
 
         var foundHint = false
-        house.cells.after(currentCell).unassigned().forEach { nextCell ->
+        house.cellsAfter(currentCell).unassigned().forEach { nextCell ->
             foundHint = foundHint or findSubset(grid,
                                                 hintAggregator,
                                                 house,

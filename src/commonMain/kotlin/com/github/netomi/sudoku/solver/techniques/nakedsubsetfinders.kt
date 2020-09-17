@@ -40,7 +40,7 @@ open class NakedPairFinder : BaseHintFinder
             for (cell in house.cells.biValue()) {
                 val possibleValues = cell.possibleValueSet
 
-                for (otherCell in house.cells.after(cell).biValue()) {
+                for (otherCell in house.cellsAfter(cell).biValue()) {
                     val otherPossibleValues = otherCell.possibleValueSet
 
                     // If the two [CellSet]s containing the possible candidate values
@@ -92,7 +92,7 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
-            if (!house.solved) {
+            if (!house.isSolved) {
                 house.cells.unassigned().forEach { cell ->
                     findSubset(grid,
                                hintAggregator,
@@ -145,7 +145,7 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
         }
 
         var foundHint = false
-        house.cells.after(currentCell).unassigned().forEach { nextCell ->
+        house.cellsAfter(currentCell).unassigned().forEach { nextCell ->
             foundHint = foundHint or findSubset(grid,
                                                 hintAggregator,
                                                 house,

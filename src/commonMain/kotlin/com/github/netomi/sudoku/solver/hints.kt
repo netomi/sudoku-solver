@@ -87,11 +87,11 @@ open class EliminationHint(type:               Grid.Type,
 
     override val description: String
         get() {
-            val values = matchingValues.allSetBits().joinToString ("/") { it.toString() }
-            val cells  = matchingCells.allSetBits().joinToString { gridType.getCellName(it) }
+            val values = matchingValues.setBits().joinToString ("/") { it.toString() }
+            val cells  = matchingCells.setBits().joinToString { gridType.getCellName(it) }
 
             val eliminations = StringBuilder()
-            for ((index, cellIndex) in affectedCells.allSetBits().withIndex()) {
+            for ((index, cellIndex) in affectedCells.setBits().withIndex()) {
                 eliminations.append(gridType.getCellName(cellIndex))
                 eliminations.append("<>")
                 eliminations.append(excludedValues[index].toCollection())
@@ -160,7 +160,7 @@ class ChainEliminationHint(type:             Grid.Type,
     override val description: String
         get() {
             val eliminations = StringBuilder()
-            for ((index, cellIndex) in affectedCells.allSetBits().withIndex()) {
+            affectedCells.setBits().forEachIndexed { index, cellIndex ->
                 eliminations.append(gridType.getCellName(cellIndex))
                 eliminations.append("<>")
                 eliminations.append(excludedValues[index].toCollection())

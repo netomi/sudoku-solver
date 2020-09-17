@@ -79,7 +79,7 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
      * @param otherCells a [CellSet] whose bits represent cells in the grid
      */
     fun containsAllCells(otherCells: CellSet): Boolean {
-        return otherCells.allSetBits().all { cellIndex -> containsCell(cellIndex) }
+        return otherCells.setBits().all { cellIndex -> containsCell(cellIndex) }
     }
 
     /**
@@ -87,6 +87,14 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
      */
     val cells: Sequence<Cell>
         get() = cellSet.cells(owner)
+
+    /**
+     * Returns a [Sequence] containing all cells of this [House] whose
+     * [Cell.cellIndex] is larger than the cell index of the given [cell].
+     */
+    fun cellsAfter(cell: Cell):Sequence<Cell> {
+        return cellSet.cellsAfter(owner, cell)
+    }
 
     /**
      * Returns a [Sequence] containing all cells of this [House]
@@ -137,19 +145,19 @@ abstract class House internal constructor(internal val owner: Grid, val regionIn
     /**
      * Checks whether all cells in this [House] have unique values assigned.
      */
-    val solved: Boolean
+    val isSolved: Boolean
         get() = assignedValueSet.cardinality() == owner.gridSize
 
-    fun assignedValues(): Iterable<Int> {
-        return assignedValueSet.allSetBits()
+    fun assignedValues(): Sequence<Int> {
+        return assignedValueSet.setBits()
     }
 
-    fun unassignedValues(): Iterable<Int> {
-        return assignedValueSet.allUnsetBits()
+    fun unassignedValues(): Sequence<Int> {
+        return assignedValueSet.unsetBits()
     }
 
-    fun unassignedValues(startValue: Int): Iterable<Int> {
-        return assignedValueSet.allUnsetBits(startValue)
+    fun unassignedValues(startValue: Int): Sequence<Int> {
+        return assignedValueSet.unsetBits(startValue)
     }
 
     /**

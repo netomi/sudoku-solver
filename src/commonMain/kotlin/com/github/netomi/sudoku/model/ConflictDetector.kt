@@ -30,7 +30,7 @@ internal class ConflictDetector : GridVisitor<Array<Conflict>>
                 val conflictPeers = cell.peers.filter { it.value == cell.value }
                 val conflictCells = MutableCellSet.of(grid, conflictPeers)
 
-                if (conflictCells.cardinality() > 0) {
+                if (conflictCells.isNotEmpty) {
                     conflictCells.set(cell.cellIndex)
                     if (!foundConflicts.contains(conflictCells)) {
                         foundConflicts.add(conflictCells)

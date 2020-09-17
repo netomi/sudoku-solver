@@ -50,7 +50,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
-            if (!house.solved) {
+            if (!house.isSolved) {
                 for (value in house.unassignedValues()) {
                     findBaseSet(grid,
                                 hintAggregator,
@@ -77,7 +77,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
             return false
         }
 
-        val potentialPositions: CellSet = house.getPotentialPositionsAsSet(value)
+        val potentialPositions = house.getPotentialPositionsAsSet(value)
         if (potentialPositions.cardinality() > size) {
             return false
         }
@@ -129,7 +129,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
 
     private fun getCellsOfCoverSet(grid: Grid, baseSetType: HouseType, coverSet: MutableHouseSet): MutableCellSet {
         val affectedCells = MutableCellSet.empty(grid)
-        for (i in coverSet.allSetBits()) {
+        for (i in coverSet.setBits()) {
             val house = if (baseSetType === HouseType.ROW) grid.getColumn(i) else grid.getRow(i)
             affectedCells.or(house.cellSet)
         }

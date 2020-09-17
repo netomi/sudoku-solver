@@ -81,7 +81,7 @@ abstract class BaseHintFinderTest
                         val eliminationHint = hint as EliminationHint
                         var index = 0
                         for (cell in eliminationHint.affectedCells.cells(grid)) {
-                            for (excludedValue in eliminationHint.excludedValues[index].allSetBits()) {
+                            for (excludedValue in eliminationHint.excludedValues[index].values) {
                                 val candidate = Candidate(cell.row.rowNumber,
                                                           cell.column.columnNumber,
                                                           excludedValue)

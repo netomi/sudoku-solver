@@ -67,7 +67,7 @@ internal interface BaseHintFinder : HintFinder
                                                     .filter { it.possibleValueSet[excludedValue] })
 
         val eliminations = MutableValueSet.of(grid, excludedValue)
-        if (affectedCells.cardinality() > 0) {
+        if (affectedCells.isNotEmpty) {
             hintAggregator.addHint(
                 EliminationHint(grid.type,
                                 solvingTechnique,
@@ -96,13 +96,13 @@ internal interface BaseHintFinder : HintFinder
         val excludedValues: MutableList<ValueSet> = ArrayList()
         for (cell in affectedCells.cells(grid).unassigned()) {
             val valuesToExclude = valuesExcluding(cell.possibleValueSet, allowedValues)
-            if (valuesToExclude.cardinality() > 0) {
+            if (valuesToExclude.isNotEmpty) {
                 cellsToModify.set(cell.cellIndex)
                 excludedValues.add(valuesToExclude)
             }
         }
 
-        if (cellsToModify.cardinality() > 0) {
+        if (cellsToModify.isNotEmpty) {
             hintAggregator.addHint(
                 EliminationHint(grid.type,
                                 solvingTechnique,
@@ -150,13 +150,13 @@ internal interface BaseHintFinder : HintFinder
 
         for (cell in affectedCells.cells(grid).unassigned()) {
             val valuesToExclude = valuesIncluding(cell.possibleValueSet, excludedValues)
-            if (valuesToExclude.cardinality() > 0) {
+            if (valuesToExclude.isNotEmpty) {
                 cellsToModify.set(cell.cellIndex)
                 valuesToExcludeList.add(valuesToExclude)
             }
         }
 
-        return if (cellsToModify.cardinality() > 0) {
+        return if (cellsToModify.isNotEmpty) {
             hintAggregator.addHint(
                 EliminationHint(grid.type,
                                 solvingTechnique,
@@ -192,13 +192,13 @@ internal interface BaseHintFinder : HintFinder
 
         for (cell in affectedCells.cells(grid).unassigned()) {
             val valuesToExclude = valuesIncluding(cell.possibleValueSet, excludedValues)
-            if (valuesToExclude.cardinality() > 0) {
+            if (valuesToExclude.isNotEmpty) {
                 cellsToModify.set(cell.cellIndex)
                 valuesToExcludeList.add(valuesToExclude)
             }
         }
 
-        return if (cellsToModify.cardinality() > 0) {
+        return if (cellsToModify.isNotEmpty) {
             hintAggregator.addHint(
                     ChainEliminationHint(grid.type,
                                          solvingTechnique,

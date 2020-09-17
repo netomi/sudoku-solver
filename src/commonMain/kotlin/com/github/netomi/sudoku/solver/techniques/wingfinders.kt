@@ -32,7 +32,7 @@ class XYWingFinder : BaseWingFinder()
         get() = SolvingTechnique.XY_WING
 
     override fun isPotentialPivotCell(cell: Cell): Boolean {
-        return cell.biValue
+        return cell.isBiValue
     }
 
     override fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ? {
@@ -105,12 +105,12 @@ class WWingFinder : BaseHintFinder
         get() = SolvingTechnique.W_WING
 
     private fun isPotentialPivotCell(cell: Cell): Boolean {
-        return cell.possibleValueSet.cardinality() == 2
+        return cell.isBiValue
     }
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         for (pivotCell in grid.cells.unassigned().filter(this::isPotentialPivotCell)) {
-            for (candidate in pivotCell.possibleValueSet.allSetBits()) {
+            for (candidate in pivotCell.possibleValues) {
                 for (peerCell in pivotCell.peers.unassigned().filter { it.possibleValueSet[candidate] }) {
                     for (linkedCell in getStronglyLinkedCells(peerCell, candidate)) {
                         for (endCell in getEndCells(pivotCell, linkedCell)) {
@@ -143,7 +143,7 @@ class WWingFinder : BaseHintFinder
 
         for (house in cell.houses) {
             val potentialPositionSet = house.getPotentialPositionsAsSet(candidate)
-            if (potentialPositionSet.cardinality() != 2) continue
+            if (potentialPositionSet.isNotBiValue) continue
 
             cellList.addAll(house.cellsExcluding(cell)
                                  .unassigned()
@@ -170,7 +170,7 @@ abstract class BaseWingFinder : BaseHintFinder
         for (pivotCell in grid.cells.unassigned().filter(this::isPotentialPivotCell)) {
             for (pincerOne in pivotCell.peers.biValue()) {
                 if (pivotCell.possibleValueSet.intersects(pincerOne.possibleValueSet)) {
-                    for (pincerTwo in pivotCell.peers.after(pincerOne).biValue()) {
+                    for (pincerTwo in pivotCell.peersAfter(pincerOne).biValue()) {
                         val xyz = getXYZ(pivotCell, pincerOne, pincerTwo)
                         xyz?.apply {
                             foundWing(grid, hintAggregator, pivotCell, pincerOne, pincerTwo, pivotCell.peerSet.copy(), xyz)

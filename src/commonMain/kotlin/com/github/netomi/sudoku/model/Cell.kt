@@ -58,6 +58,9 @@ class Cell internal constructor(val owner:       Grid,
             return _possibleValueSet.asValueSet()
         }
 
+    val possibleValues: Sequence<Int>
+        get() = possibleValueSet.values
+
     private var _excludedValueSet: MutableValueSet = MutableValueSet.empty(owner)
     val excludedValueSet : ValueSet
         get() = _excludedValueSet.asValueSet()
@@ -83,14 +86,14 @@ class Cell internal constructor(val owner:       Grid,
     /**
      * Returns whether a value has been assigned to this cell.
      */
-    val assigned: Boolean
+    val isAssigned: Boolean
         get() = value > 0
 
     /**
      * Returns whether the cell is exactly two candidates left.
      */
-    val biValue: Boolean
-        get() = possibleValueSet.cardinality() == 2
+    val isBiValue: Boolean
+        get() = possibleValueSet.isBiValue
 
     /**
      * Returns a [Sequence] containing all cells that are visible from
@@ -98,6 +101,15 @@ class Cell internal constructor(val owner:       Grid,
      */
     val peers: Sequence<Cell>
         get() = peerSet.cells(owner)
+
+    /**
+     * Returns a [Sequence] containing all cells that are visible from
+     * this cell and whose [Cell.cellIndex] is larger than the cell index
+     * of the given [cell].
+     */
+    fun peersAfter(cell: Cell):Sequence<Cell> {
+        return peerSet.cellsAfter(owner, cell)
+    }
 
     /**
      * Returns a [Sequence] of all [House]s this cell is contained in.
@@ -220,7 +232,7 @@ class Cell internal constructor(val owner:       Grid,
     }
 
     internal fun resetPossibleValues() {
-        if (!assigned) {
+        if (!isAssigned) {
             _possibleValueSet.setAll()
             _possibleValueSet.andNot(_excludedValueSet)
         } else {

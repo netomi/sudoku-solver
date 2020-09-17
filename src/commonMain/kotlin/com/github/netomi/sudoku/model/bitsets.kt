@@ -29,6 +29,10 @@ interface SimpleBitSet
     val firstBitIndex: Int
     val lastBitIndex:  Int
 
+    val isEmpty:       Boolean
+    val isNotEmpty:    Boolean
+    val isBiValue:     Boolean
+    val isNotBiValue:  Boolean
     fun cardinality(): Int
 
     operator fun get(bit: Int): Boolean
@@ -39,13 +43,11 @@ interface SimpleBitSet
     fun nextSetBit(startBit: Int): Int
     fun previousSetBit(startBit: Int): Int
 
-    fun allSetBits(): Iterable<Int>
-    fun allSetBits(startBit: Int): Iterable<Int>
+    fun setBits(): Sequence<Int>
+    fun setBits(startBit: Int): Sequence<Int>
 
-    fun filteredSetBits(predicate: (Int) -> Boolean): Iterable<Int>
-
-    fun allUnsetBits(): Iterable<Int>
-    fun allUnsetBits(startBit: Int): Iterable<Int>
+    fun unsetBits(): Sequence<Int>
+    fun unsetBits(startBit: Int): Sequence<Int>
 
     fun toCollection(): Collection<Int>
     fun toArray(): IntArray
@@ -82,6 +84,18 @@ abstract class AbstractBitSetImpl<in T : SimpleBitSet, out R>(final override val
 
     override val lastBitIndex: Int
         get() = size - 1
+
+    override val isEmpty: Boolean
+        get() = bits.isEmpty
+
+    override val isNotEmpty: Boolean
+        get() = !isEmpty
+
+    override val isBiValue: Boolean
+        get() = cardinality() == 2
+
+    override val isNotBiValue: Boolean
+        get() = !isBiValue
 
     override fun cardinality(): Int {
         return bits.cardinality()
@@ -126,24 +140,20 @@ abstract class AbstractBitSetImpl<in T : SimpleBitSet, out R>(final override val
         return bits.previousSetBit(startBit)
     }
 
-    override fun allSetBits(): Iterable<Int> {
-        return Iterable { BitIterator(offset, size, false) }
+    override fun setBits(): Sequence<Int> {
+        return Sequence { BitIterator(offset, size, false) }
     }
 
-    override fun allSetBits(startBit: Int): Iterable<Int> {
-        return Iterable { BitIterator(startBit, size, false) }
+    override fun setBits(startBit: Int): Sequence<Int> {
+        return Sequence { BitIterator(startBit, size, false) }
     }
 
-    override fun filteredSetBits(predicate: (Int) -> Boolean): Iterable<Int> {
-        return allSetBits().filter(predicate)
+    override fun unsetBits(): Sequence<Int> {
+        return Sequence { BitIterator(offset, size, true) }
     }
 
-    override fun allUnsetBits(): Iterable<Int> {
-        return Iterable { BitIterator(offset, size, true) }
-    }
-
-    override fun allUnsetBits(startBit: Int): Iterable<Int> {
-        return Iterable { BitIterator(startBit, size, true) }
+    override fun unsetBits(startBit: Int): Sequence<Int> {
+        return Sequence { BitIterator(startBit, size, true) }
     }
 
     override fun and(other: T) {
@@ -159,7 +169,7 @@ abstract class AbstractBitSetImpl<in T : SimpleBitSet, out R>(final override val
     }
 
     override fun toCollection(): Collection<Int> {
-        return allSetBits().toList()
+        return setBits().toList()
     }
 
     override fun toArray(): IntArray {
@@ -225,6 +235,13 @@ abstract class AbstractBitSetImpl<in T : SimpleBitSet, out R>(final override val
 
 interface ValueSet : SimpleBitSet
 {
+    val values: Sequence<Int>
+        get() = setBits()
+
+    fun valuesAfter(value: Int): Sequence<Int> {
+        return setBits(value + 1)
+    }
+
     fun inverse(): MutableValueSet {
         val valueSet = toMutableValueSet()
         for (idx in 1..lastBitIndex) {
@@ -330,8 +347,11 @@ class MutableHouseSet : AbstractBitSetImpl<MutableHouseSet, MutableHouseSet>
 interface CellSet : SimpleBitSet
 {
     fun cells(grid: Grid): Sequence<Cell> {
-        return allSetBits().asSequence()
-                           .map { cellIndex -> grid.getCell(cellIndex) }
+        return setBits().map { cellIndex -> grid.getCell(cellIndex) }
+    }
+
+    fun cellsAfter(grid: Grid, cell: Cell): Sequence<Cell> {
+        return setBits(cell.cellIndex + 1).map { cellIndex -> grid.getCell(cellIndex) }
     }
 
     fun toRowSet(grid: Grid): MutableHouseSet {

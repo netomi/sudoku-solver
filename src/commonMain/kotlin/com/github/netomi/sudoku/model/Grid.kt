@@ -196,14 +196,14 @@ class Grid
     /**
      * Returns whether the sudoku grid is fully solved with a valid solution.
      */
-    val solved: Boolean
-        get() = houses.all { it.solved }
+    val isSolved: Boolean
+        get() = houses.all { it.isSolved }
 
     /**
      * Returns whether the current state of the sudoku grid is valid wrt the
      * normal sudoku constraints. The grid might not be fully solved yet.
      */
-    val valid: Boolean
+    val isValid: Boolean
         get() = houses.all { it.isValid }
 
     val conflicts: Array<Conflict>
@@ -267,7 +267,7 @@ class Grid
         }
 
         for (affectedCell in affectedCells) {
-            for (value in affectedCell._possibleValueSet.allSetBits()) {
+            for (value in affectedCell._possibleValueSet.values) {
                 potentialPositions[value - 1].set(affectedCell.cellIndex)
             }
         }
@@ -277,7 +277,7 @@ class Grid
 
     internal fun notifyPossibleValuesChanged(cell: Cell) {
         potentialPositions.forEach { potentialPosition -> potentialPosition.clear(cell.cellIndex) }
-        cell._possibleValueSet.allSetBits().forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
+        cell._possibleValueSet.values.forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
         stateValid = true
     }
 
@@ -309,11 +309,9 @@ class Grid
         houses.forEach { obj -> obj.updatePossibleValuesInCells() }
 
         // Fourth: refresh all possible positions for each cell.
-        potentialPositions.forEach { obj -> obj.clearAll() }
+        potentialPositions.forEach { cellSet -> cellSet.clearAll() }
         cells.forEach { cell ->
-            for (value in cell._possibleValueSet.allSetBits()) {
-                potentialPositions[value - 1].set(cell.cellIndex)
-            }
+            cell._possibleValueSet.values.forEach { value -> potentialPositions[value - 1].set(cell.cellIndex) }
         }
 
         stateValid = true
@@ -323,7 +321,7 @@ class Grid
         cells.forEach  { cell -> cell.clear(false) }
         houses.forEach { house -> house.clear() }
 
-        potentialPositions.forEach { obj: MutableCellSet -> obj.clearAll() }
+        potentialPositions.forEach { cellSet -> cellSet.clearAll() }
 
         if (updateGrid) {
             updateState()

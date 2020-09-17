@@ -29,7 +29,7 @@ class Conflict(val cells: CellSet)
         val sb = StringBuilder()
         val firstCell = cells.firstSetBit()
         sb.append("cell[$firstCell]")
-        for (idx in cells.allSetBits(firstCell + 1)) {
+        for (idx in cells.setBits(firstCell + 1)) {
             sb.append(" == ")
             sb.append("cell[$idx]")
 

@@ -6,8 +6,6 @@
 - added additional hint solver techniques
   - wings (xy-wing, xyz-wing, w-wing)
 
-### Changed
-  
 ### Fixed
   
 

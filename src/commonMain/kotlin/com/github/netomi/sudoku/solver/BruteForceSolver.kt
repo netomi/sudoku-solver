@@ -89,7 +89,7 @@ class BruteForceSolver : GridSolver
         // try all remaining possible values of the current cell
         // and traverse all other cells recursively. Slow but guaranteed
         // to solve the sudoku grid.
-        while (possibleValues.cardinality() > 0) {
+        while (possibleValues.isNotEmpty) {
             if (possibleValues.cardinality() > 1) {
                 guesses++
             }
@@ -97,7 +97,7 @@ class BruteForceSolver : GridSolver
             val value = when (valueSelection) {
                 ValueSelection.FORWARD ->  possibleValues.firstSetBit()
                 ValueSelection.BACKWARD -> possibleValues.previousSetBit(possibleValues.lastBitIndex)
-                ValueSelection.RANDOM ->   possibleValues.allSetBits().shuffled().first()
+                ValueSelection.RANDOM ->   possibleValues.values.shuffled().first()
             }
 
             possibleValues.clear(value)

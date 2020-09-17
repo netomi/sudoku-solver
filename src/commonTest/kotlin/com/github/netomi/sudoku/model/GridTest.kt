@@ -31,7 +31,7 @@ class GridTest {
         grid.getCell(0).value = 1
         assertEquals(grid.gridSize, countItems(row.cells))
         assertEquals(grid.gridSize - 1, countItems(row.cells.unassigned()))
-        assertEquals(1, countItems(row.cells.after(grid.getCell(7)).unassigned()))
+        assertEquals(1, countItems(row.cellsAfter(grid.getCell(7)).unassigned()))
 
         for (i in 0 until grid.gridSize) {
             grid.getCell(i).value = i + 1
@@ -39,7 +39,7 @@ class GridTest {
 
         assertEquals(grid.gridSize, countItems(row.cells))
         assertEquals(0, countItems(row.cells.unassigned()))
-        assertEquals(0, countItems(row.cells.after(grid.getCell(7)).unassigned()))
+        assertEquals(0, countItems(row.cellsAfter(grid.getCell(7)).unassigned()))
     }
 
     companion object {

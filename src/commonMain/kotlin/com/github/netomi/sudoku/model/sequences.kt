@@ -20,19 +20,15 @@
 package com.github.netomi.sudoku.model
 
 fun Sequence<Cell>.assigned(): Sequence<Cell> {
-    return this.filter { it.assigned }
+    return this.filter { it.isAssigned }
 }
 
 fun Sequence<Cell>.unassigned(): Sequence<Cell> {
-    return this.filter { !it.assigned }
+    return this.filter { !it.isAssigned }
 }
 
 fun Sequence<Cell>.biValue(): Sequence<Cell> {
-    return this.filter(Cell::biValue)
-}
-
-fun Sequence<Cell>.after(cell: Cell): Sequence<Cell> {
-    return this.filter { it.cellIndex > cell.cellIndex }
+    return this.filter(Cell::isBiValue)
 }
 
 fun Sequence<Cell>.excluding(cell: Cell): Sequence<Cell> {
@@ -40,5 +36,5 @@ fun Sequence<Cell>.excluding(cell: Cell): Sequence<Cell> {
 }
 
 fun Sequence<House>.unsolved(): Sequence<House> {
-    return this.filter { !it.solved }
+    return this.filter { !it.isSolved }
 }

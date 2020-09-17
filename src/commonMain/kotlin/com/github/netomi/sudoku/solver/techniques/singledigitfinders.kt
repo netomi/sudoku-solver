@@ -43,11 +43,11 @@ class SkyscraperFinder : BaseSingleDigitFinder()
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitor = HouseVisitor { house ->
             // find rows for which a possible value has only 2 positions left.
-            if (house.solved) return@HouseVisitor
+            if (house.isSolved) return@HouseVisitor
 
             for (candidate in house.unassignedValues()) {
                 val potentialPositions = house.getPotentialPositionsAsSet(candidate)
-                if (potentialPositions.cardinality() == 2) {
+                if (potentialPositions.isBiValue) {
                     findMatchingHouse(grid, hintAggregator, house, potentialPositions, candidate)
                 }
             }
@@ -82,13 +82,11 @@ class TwoStringKiteFinder : BaseSingleDigitFinder()
         get() = SolvingTechnique.TWO_STRING_KITE
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.acceptRows { row ->
-            if (row.solved) return@acceptRows
-
+        grid.rows.unsolved().forEach { row ->
             // find rows for which a possible value has only 2 positions left.
             for (candidate in row.unassignedValues()) {
                 val potentialPositions = row.getPotentialPositionsAsSet(candidate)
-                if (potentialPositions.cardinality() == 2) {
+                if (potentialPositions.isBiValue) {
                     findMatchingHouse(grid, hintAggregator, row, potentialPositions, candidate)
                 }
             }
@@ -119,12 +117,12 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
             if (assignedValues[candidate]) continue
 
             val potentialOtherPositions = otherHouse.getPotentialPositionsAsSet(candidate)
-            if (potentialOtherPositions.cardinality() != 2) continue
+            if (potentialOtherPositions.isNotBiValue) continue
 
             // check that the position sets are mutually exclusive.
             val combinedPositions = potentialPositions.toMutableCellSet()
             combinedPositions.and(potentialOtherPositions)
-            if (combinedPositions.cardinality() != 0) continue
+            if (combinedPositions.isNotEmpty) continue
 
             checkMatchingHouse(grid, hintAggregator, house, potentialPositions, otherHouse, potentialOtherPositions, candidate)
         }
@@ -140,19 +138,19 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
                                    potentialOtherPositions: CellSet,
                                    candidate:               Int)
     {
-        for (cellInFirstHouse in potentialPositions.allSetBits()) {
-            for (cellInSecondHouse in potentialOtherPositions.allSetBits()) {
-                val combinedSet = MutableCellSet.of(grid, cellInFirstHouse, cellInSecondHouse)
+        for (cellInFirstHouse in potentialPositions.cells(grid)) {
+            for (cellInSecondHouse in potentialOtherPositions.cells(grid)) {
+                val combinedSet = MutableCellSet.of(cellInFirstHouse, cellInSecondHouse)
                 val singleHouse = getSingleHouse(grid, house, combinedSet)
 
                 // we found a pair of cells from the two houses that are in the same house.
                 singleHouse?.apply {
-                    val otherRowCell = potentialPositions.filteredSetBits { cellIndex -> cellIndex != cellInFirstHouse }.first()
-                    val otherColCell = potentialOtherPositions.filteredSetBits { cellIndex -> cellIndex != cellInSecondHouse }.first()
+                    val otherRowCell = potentialPositions.cells(grid).excluding(cellInFirstHouse).first()
+                    val otherColCell = potentialOtherPositions.cells(grid).excluding(cellInSecondHouse).first()
 
                     // find all cells that see both, the cell in the matching houses.
-                    val affectedCells = grid.getCell(otherRowCell).peerSet.toMutableCellSet()
-                    affectedCells.and(grid.getCell(otherColCell).peerSet)
+                    val affectedCells = otherRowCell.peerSet.toMutableCellSet()
+                    affectedCells.and(otherColCell.peerSet)
 
                     val excludedValues = MutableValueSet.of(grid, candidate)
 

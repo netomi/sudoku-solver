@@ -50,7 +50,7 @@ class UniqueRectangleType1Finder : BaseUniqueRectangleHintFinder()
             } else {
                 val combinedValues = possibleValues.toMutableValueSet()
                 combinedValues.andNot(expectedPossibleValues)
-                if (combinedValues.cardinality() > 0) {
+                if (combinedValues.isNotEmpty) {
                     when (cellWithAdditionalCandidates) {
                         null -> cellWithAdditionalCandidates = cell
                         else -> return
@@ -150,18 +150,18 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
             // the UR must have at least 1 UR candidate value.
             var excludedValues = possibleValues.toMutableValueSet()
             excludedValues.and(expectedPossibleValues)
-            if (excludedValues.cardinality() == 0) return
+            if (excludedValues.isEmpty) return
             foundCandidateValues.or(excludedValues)
 
             // the UR cells must have at least 1 extra value.
             excludedValues = possibleValues.toMutableValueSet()
             excludedValues.andNot(expectedPossibleValues)
-            if (excludedValues.cardinality() == 0) return
+            if (excludedValues.isEmpty) return
         }
 
-        if (foundCandidateValues.cardinality() != 2) return
+        if (foundCandidateValues.isNotBiValue) return
 
-        for (candidate in expectedPossibleValues.allSetBits()) {
+        for (candidate in expectedPossibleValues.values) {
             val cellsWithExtraCandidates = MutableCellSet.of(grid, ur.cellsInSecondHouse.asSequence())
 
             val column = cellsWithExtraCandidates.getSingleColumn(grid)
@@ -171,7 +171,7 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
             val searchPositions: (House) -> Unit = {
                 val potentialPositions = it.getPotentialPositionsAsSet(candidate).toMutableCellSet()
                 potentialPositions.andNot(cellsWithExtraCandidates)
-                if (potentialPositions.cardinality() == 0) {
+                if (potentialPositions.isEmpty) {
                     val matchingCells = MutableCellSet.of(grid, (ur.cellsInFirstHouse + ur.cellsInSecondHouse).asSequence())
 
                     val excludedValues = expectedPossibleValues.toMutableValueSet()
@@ -200,8 +200,8 @@ abstract class BaseUniqueRectangleHintFinder : BaseHintFinder
         val visitor = HouseVisitor {  house ->
             for (cell in house.cells.unassigned()) {
                 val possibleValues = cell.possibleValueSet
-                if (possibleValues.cardinality() == 2) {
-                    for (otherCell in house.cells.after(cell).unassigned()) {
+                if (possibleValues.isBiValue) {
+                    for (otherCell in house.cellsAfter(cell).unassigned()) {
                         val otherPossibleValues = otherCell.possibleValueSet
                         if (otherPossibleValues != possibleValues) continue
 
@@ -233,7 +233,7 @@ abstract class BaseUniqueRectangleHintFinder : BaseHintFinder
 
             if (correspondingCells.size == 2) {
                 val urCellSet = MutableCellSet.of(cell, otherCell, correspondingCells[0], correspondingCells[1])
-                if (urCellSet.toBlockSet(grid).cardinality() == 2) {
+                if (urCellSet.toBlockSet(grid).isBiValue) {
                     foundPossibleUniqueRectangle(grid, hintAggregator, UR(mutableListOf(cell, otherCell), correspondingCells))
                 }
             }

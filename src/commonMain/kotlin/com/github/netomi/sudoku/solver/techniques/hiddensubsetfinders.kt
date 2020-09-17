@@ -39,13 +39,13 @@ class HiddenPairFinder : BaseHintFinder
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.acceptHouses { house ->
             for (value in house.unassignedValues()) {
-                val potentialPositions: CellSet = house.getPotentialPositionsAsSet(value)
-                if (potentialPositions.cardinality() != 2) {
+                val potentialPositions = house.getPotentialPositionsAsSet(value)
+                if (potentialPositions.isNotBiValue) {
                     continue
                 }
                 for (otherValue in house.unassignedValues(value + 1)) {
                     val otherPotentialPositions: CellSet = house.getPotentialPositionsAsSet(otherValue)
-                    if (otherPotentialPositions.cardinality() != 2) {
+                    if (otherPotentialPositions.isNotBiValue) {
                         continue
                     }
 
@@ -86,10 +86,7 @@ class HiddenQuadrupleFinder : HiddenSubsetFinder(4) {
 abstract class HiddenSubsetFinder protected constructor(private val subSetSize: Int) : BaseHintFinder
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
-        grid.acceptHouses(HouseVisitor { house ->
-            if (house.solved) {
-                return@HouseVisitor
-            }
+        grid.houses.unsolved().forEach { house ->
             for (value in house.unassignedValues()) {
                 findSubset(grid,
                            hintAggregator,
@@ -99,7 +96,7 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
                            MutableCellSet.empty(grid),
                            1)
             }
-        })
+        }
     }
 
     private fun findSubset(grid:             Grid,
