@@ -1,23 +1,16 @@
 plugins {
     id 'kotlin-multiplatform'
     id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.8.4'
+    id 'signing'
 }
 
-def GROUP_ID = "com.github.netomi.sudoku"
-def ARTIFACT_ID = "sudoku-solver"
+group   = "com.github.netomi.sudoku"
+version = "0.2-SNAPSHOT"
 
-def BINTRAY_REPOSITORY = "sudoku"
-def BINTRAY_ORGANIZATION = "netomi"
-
-def ISSUE_URL = "https://github.com/netomi/sudoku-solver/issues"
-def SITE_URL = "https://github.com/netomi/sudoku-solver"
-def VCS_URL = "https://github.com/netomi/sudoku-solver.git"
-def LIBRARY_VERSION_NAME = "0.2-SNAPSHOT"
-
-group = GROUP_ID
-version = LIBRARY_VERSION_NAME
-description = 'Sudoku solver library'
+repositories {
+    mavenCentral()
+    jcenter()
+}
 
 ext {
     junitVersion  = '5.3.2'
@@ -127,52 +120,67 @@ tasks.withType(AbstractTestTask) {
     }
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+// publishing configuration
 
-afterEvaluate {
-    project.publishing.publications.all {
-        // rename artifacts
-        groupId = GROUP_ID
-        if (it.name.contains('metadata')) {
-            artifactId = "$ARTIFACT_ID"
-        } else {
-            artifactId = "$ARTIFACT_ID-$name"
+def isSnapshot = version.toString().endsWith("SNAPSHOT")
+def signingKey = project.hasProperty('signingKey') ? project.property('signingKey') : System.getenv('SIGNING_KEY')
+def SONATYPE_USERNAME = project.hasProperty('sonatypeUsername') ? project.property('sonatypeUsername') : System.getenv('SONATYPE_USERNAME')
+def SONATYPE_PASSWORD = project.hasProperty('sonatypePassword') ? project.property('sonatypePassword') : System.getenv('SONATYPE_PASSWORD')
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {
+                description = "Multiplatform sudoku hint solver"
+                name = "sudoku-solver"
+                url = "https://github.com/netomi/sudoku-solver"
+                scm {
+                    url = "https://github.com/netomi/sudoku-solver"
+                    connection = "scm:git:git://github.com/netomi/sudoku-solver.git"
+                    developerConnection = "scm:git:ssh://git@github.com/netomi/sudoku-solver.git"
+                }
+                licenses {
+                    license {
+                        name = 'GNU General Public License, Version 2'
+                        url = 'https://www.gnu.org/licenses/gpl-2.0.txt'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id = "netomi"
+                        name = "Thomas Neidhart"
+                        url = "https://github.com/netomi"
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        def releaseUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        def snapshotUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+
+        maven {
+            if (isSnapshot) {
+                url = snapshotUrl
+            } else {
+                url = releaseUrl
+            }
+
+            credentials {
+                username = SONATYPE_USERNAME
+                password = SONATYPE_PASSWORD
+            }
         }
     }
 }
 
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key  = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+signing {
+    def isRequired = !isSnapshot
 
-    publish = false
-
-    pkg {
-        repo = BINTRAY_REPOSITORY
-        name = "$GROUP_ID:$ARTIFACT_ID"
-        userOrg = BINTRAY_ORGANIZATION
-        licenses = ['GPL-2.0']
-        vcsUrl = VCS_URL
-        websiteUrl = SITE_URL
-        issueTrackerUrl = ISSUE_URL
-
-        version {
-            name = LIBRARY_VERSION_NAME
-            vcsTag = LIBRARY_VERSION_NAME
-            released = new Date()
-        }
+    if (isRequired) {
+        useInMemoryPgpKeys(signingKey, "")
+        sign(publishing.publications)
     }
 }
-
-bintrayUpload.doFirst {
-    publications = publishing.publications.collect {
-        it.name
-    }.findAll {
-        it != "kotlinMultiplatform"
-    }
-}
-
-bintrayUpload.dependsOn publishToMavenLocal
