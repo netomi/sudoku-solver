@@ -19,55 +19,76 @@
  */
 package com.github.netomi.sudoku.solver
 
+import com.github.netomi.sudoku.solver.DifficultyLevel.*
 import com.github.netomi.sudoku.solver.techniques.*
+import kotlin.math.sign
 
-enum class SolvingTechnique(val techniqueName: String, val supplier: () -> HintFinder)
+enum class SolvingTechnique(val techniqueName:   String,
+                            val difficultyLevel: DifficultyLevel,
+                            val score:           Int,
+                            val supplier:        () -> HintFinder)
 {
     // Singles.
-    FULL_HOUSE("Full House", ::FullHouseFinder),
-    NAKED_SINGLE("Naked Single", ::NakedSingleFinder),
-    HIDDEN_SINGLE("Hidden Single", ::HiddenSingleFinder),
+    FULL_HOUSE("Full House", EASY, 4, ::FullHouseFinder),
+    NAKED_SINGLE("Naked Single", EASY, 4, ::NakedSingleFinder),
+    HIDDEN_SINGLE("Hidden Single", EASY, 14, ::HiddenSingleFinder),
 
     // Locked subsets.
-    LOCKED_PAIR("Locked Pair", ::LockedPairFinder),
-    LOCKED_TRIPLE("Locked Triple", ::LockedTripleFinder),
+    LOCKED_PAIR("Locked Pair", MEDIUM, 40, ::LockedPairFinder),
+    LOCKED_TRIPLE("Locked Triple", MEDIUM, 60, ::LockedTripleFinder),
 
     // Intersections.
-    LOCKED_CANDIDATES_TYPE_1("Locked Candidates Type 1 (Pointing)", ::LockedCandidatesType1Finder),
-    LOCKED_CANDIDATES_TYPE_2("Locked Candidates Type 2 (Claiming)", ::LockedCandidatesType2Finder),
+    LOCKED_CANDIDATES_TYPE_1("Locked Candidates Type 1 (Pointing)", MEDIUM, 50, ::LockedCandidatesType1Finder),
+    LOCKED_CANDIDATES_TYPE_2("Locked Candidates Type 2 (Claiming)", MEDIUM, 50, ::LockedCandidatesType2Finder),
 
     // Hidden subsets.
-    HIDDEN_PAIR("Hidden Pair", ::HiddenPairFinder),
-    HIDDEN_TRIPLE("Hidden Triple", ::HiddenTripleFinder),
-    HIDDEN_QUADRUPLE("Hidden Quadruple", ::HiddenQuadrupleFinder),
+    HIDDEN_PAIR("Hidden Pair", MEDIUM, 70, ::HiddenPairFinder),
+    HIDDEN_TRIPLE("Hidden Triple", MEDIUM, 100, ::HiddenTripleFinder),
+    HIDDEN_QUADRUPLE("Hidden Quadruple", HARD, 150, ::HiddenQuadrupleFinder),
 
     // Naked subsets.
-    NAKED_PAIR("Naked Pair", ::NakedPairFinder),
-    NAKED_TRIPLE("Naked Triple", ::NakedTripleFinder),
-    NAKED_QUADRUPLE("Naked Quadruple", ::NakedQuadrupleFinder),
+    NAKED_PAIR("Naked Pair", MEDIUM, 60, ::NakedPairFinder),
+    NAKED_TRIPLE("Naked Triple", MEDIUM, 80, ::NakedTripleFinder),
+    NAKED_QUADRUPLE("Naked Quadruple", HARD, 120, ::NakedQuadrupleFinder),
 
     // Basic fish.
-    X_WING("X-Wing", ::XWingHintFinder),
-    SWORDFISH("Swordfish", ::SwordFishFinder),
-    JELLYFISH("Jellyfish", ::JellyFishFinder),
+    X_WING("X-Wing", HARD, 140, ::XWingHintFinder),
+    SWORDFISH("Swordfish", HARD, 150, ::SwordFishFinder),
+    JELLYFISH("Jellyfish", HARD, 160, ::JellyFishFinder),
 
     // Single digit patterns.
-    SKYSCRAPER("Skyscraper", ::SkyscraperFinder),
-    TWO_STRING_KITE("2-String Kite", ::TwoStringKiteFinder),
+    SKYSCRAPER("Skyscraper", HARD, 130, ::SkyscraperFinder),
+    TWO_STRING_KITE("2-String Kite", HARD, 150, ::TwoStringKiteFinder),
 
     // Uniqueness tests.
-    UNIQUE_RECTANGLE_TYPE_1("Unique Rectangle Type 1", ::UniqueRectangleType1Finder),
-    UNIQUE_RECTANGLE_TYPE_2("Unique Rectangle Type 2", ::UniqueRectangleType2Finder),
-    // UNIQUE_RECTANGLE_TYPE_3("Unique Rectangle Type 3", ::UniqueRectangleType3Finder),
-    UNIQUE_RECTANGLE_TYPE_4("Unique Rectangle Type 4", ::UniqueRectangleType4Finder),
+    UNIQUE_RECTANGLE_TYPE_1("Unique Rectangle Type 1", HARD, 100, ::UniqueRectangleType1Finder),
+    UNIQUE_RECTANGLE_TYPE_2("Unique Rectangle Type 2", HARD, 100, ::UniqueRectangleType2Finder),
+    // UNIQUE_RECTANGLE_TYPE_3("Unique Rectangle Type 3", HARD, 100, ::UniqueRectangleType3Finder),
+    UNIQUE_RECTANGLE_TYPE_4("Unique Rectangle Type 4", HARD, 100, ::UniqueRectangleType4Finder),
 
     // Wings.
-    XY_WING("XY-Wing", ::XYWingFinder),
-    XYZ_WING("XYZ-Wing", ::XYZWingFinder),
-    W_WING("W-Wing", ::WWingFinder),
+    XY_WING("XY-Wing", HARD, 160, ::XYWingFinder),
+    XYZ_WING("XYZ-Wing", HARD, 180, ::XYZWingFinder),
+    W_WING("W-Wing", HARD, 120, ::WWingFinder),
 
     // Chains.
-    REMOTE_PAIR("Remote Pair", ::RemotePairFinder),
-    X_CHAIN("X-Chain", ::XChainFinder),
-    XY_CHAIN("XY-Chain", ::XYChainFinder);
+    REMOTE_PAIR("Remote Pair", HARD, 110, ::RemotePairFinder),
+    X_CHAIN("X-Chain", UNFAIR, 260, ::XChainFinder),
+    XY_CHAIN("XY-Chain", UNFAIR, 260, ::XYChainFinder);
+}
+
+enum class DifficultyLevel {
+    EASY,
+    MEDIUM,
+    HARD,
+    UNFAIR,
+    EXTREME
+}
+
+fun DifficultyLevel.max(other: DifficultyLevel): DifficultyLevel {
+    return when((ordinal - other.ordinal).sign) {
+        -1   -> other
+        +1   -> this
+        else -> this
+    }
 }

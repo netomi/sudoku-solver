@@ -39,6 +39,12 @@ class HintSolver : GridSolver
         finderList.addAll(finder)
     }
 
+    constructor(solvingTechniques: List<SolvingTechnique>) {
+        for (technique in solvingTechniques) {
+            finderList.add(technique.supplier.invoke())
+        }
+    }
+
     override fun solve(grid: Grid): Grid {
         val searchGrid = grid.copy()
 
