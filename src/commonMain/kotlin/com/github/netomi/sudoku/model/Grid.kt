@@ -43,12 +43,12 @@ class Grid
     private val potentialPositions: Array<MutableCellSet>
 
     private var stateValid: Boolean by Delegates.observable(false) { _, _, newValue ->
-        if (newValue) _onUpdate.invoke()
+        if (newValue) _onUpdate.forEach { it.invoke(this) }
     }
 
-    private var _onUpdate: () -> Unit = {}
-    fun onUpdate(target: () -> Unit) {
-        _onUpdate = target
+    private var _onUpdate: MutableList<(Grid) -> Unit> = ArrayList()
+    fun onUpdate(target: (Grid) -> Unit) {
+        _onUpdate.add(target)
     }
 
     internal constructor(type: Type) {
