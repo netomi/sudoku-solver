@@ -21,7 +21,7 @@ package com.github.netomi.sudoku.solver
 
 import com.github.netomi.sudoku.model.*
 
-class AssignmentHint(type:             Grid.Type,
+class AssignmentHint(type:             GridType,
                      solvingTechnique: SolvingTechnique,
                      val cellIndex:    Int,
                      relatedCells:     CellSet,
@@ -61,7 +61,7 @@ class AssignmentHint(type:             Grid.Type,
     }
 }
 
-open class EliminationHint(type:               Grid.Type,
+open class EliminationHint(type:               GridType,
                            solvingTechnique:   SolvingTechnique,
                            val matchingCells:  CellSet,
                            val matchingValues: ValueSet,
@@ -70,7 +70,7 @@ open class EliminationHint(type:               Grid.Type,
                            val excludedValues: Array<ValueSet>)
     : Hint(type, solvingTechnique, relatedCells)
 {
-    constructor(type:             Grid.Type,
+    constructor(type:             GridType,
                 solvingTechnique: SolvingTechnique,
                 matchingCells:    CellSet,
                 matchingValues:   ValueSet,
@@ -147,7 +147,7 @@ open class EliminationHint(type:               Grid.Type,
     }
 }
 
-class ChainEliminationHint(type:             Grid.Type,
+class ChainEliminationHint(type:             GridType,
                            solvingTechnique: SolvingTechnique,
                            matchingCells:    CellSet,
                            matchingValues:   ValueSet,
@@ -192,13 +192,13 @@ class ChainEliminationHint(type:             Grid.Type,
 }
 
 class Chain {
-    lateinit var rootNode: ChainNode
+    var rootNode: ChainNode
         private set
 
-    lateinit var lastNode: ChainNode
+    var lastNode: ChainNode
         private set
 
-    lateinit var cellSet: MutableCellSet
+    var cellSet: MutableCellSet
         private set
 
     constructor(grid: Grid, cellIndex: Int, candidate: Int) {
@@ -329,7 +329,7 @@ class Chain {
         return true
     }
 
-    fun toString(type: Grid.Type): String {
+    fun toString(type: GridType): String {
         return rootNode.toString(type)
     }
 }
@@ -362,7 +362,7 @@ class ChainNode(val cellIndex: Int,
         return true
     }
 
-    fun toString(type: Grid.Type): String {
+    fun toString(type: GridType): String {
         val sb = StringBuilder()
 
         sb.append(type.getCellName(cellIndex))
@@ -396,7 +396,7 @@ class ChainLink(val linkType: LinkType,
         return true
     }
 
-    fun toString(type: Grid.Type): String {
+    fun toString(type: GridType): String {
         return " ${linkType.symbol} ${node.toString(type)}"
     }
 }

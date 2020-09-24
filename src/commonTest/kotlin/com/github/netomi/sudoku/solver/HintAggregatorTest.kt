@@ -21,14 +21,14 @@ package com.github.netomi.sudoku.solver
 
 import com.github.netomi.sudoku.model.CellSet
 import com.github.netomi.sudoku.model.Grid
-import com.github.netomi.sudoku.model.PredefinedType
+import com.github.netomi.sudoku.model.GridType
 import kotlin.test.*
 
 class HintAggregatorTest {
     @Test
     fun duplicateHints() {
         val aggregator = HintAggregator()
-        val grid: Grid = Grid.of(PredefinedType.CLASSIC_9x9)
+        val grid: Grid = Grid.of(GridType.CLASSIC_9x9)
         val hint: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 0, CellSet.empty(grid), 1)
         aggregator.addHint(hint)
         aggregator.addHint(hint)
@@ -38,7 +38,7 @@ class HintAggregatorTest {
     @Test
     fun differentHints() {
         val aggregator = HintAggregator()
-        val grid: Grid = Grid.of(PredefinedType.CLASSIC_9x9)
+        val grid: Grid = Grid.of(GridType.CLASSIC_9x9)
         val hint1: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 0, CellSet.empty(grid), 1)
         val hint2: Hint = AssignmentHint(grid.type, SolvingTechnique.FULL_HOUSE, 1, CellSet.empty(grid), 2)
         aggregator.addHint(hint1)

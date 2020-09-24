@@ -20,13 +20,13 @@
 package com.github.netomi.sudoku.solver
 
 import com.github.netomi.sudoku.model.Grid
-import com.github.netomi.sudoku.model.PredefinedType
+import com.github.netomi.sudoku.model.GridType
 import kotlin.test.*
 
 class ChainTest
 {
     companion object {
-        val grid: Grid = Grid.of(PredefinedType.CLASSIC_9x9)
+        val grid: Grid = Grid.of(GridType.CLASSIC_9x9)
     }
 
     @Test

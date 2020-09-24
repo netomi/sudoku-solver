@@ -23,7 +23,7 @@ import kotlin.properties.Delegates
 
 class Grid
 {
-    val type: Type
+    val type: GridType
 
     val gridSize: Int
         get() = type.gridSize
@@ -51,7 +51,7 @@ class Grid
         _onUpdate.add(target)
     }
 
-    internal constructor(type: Type) {
+    private constructor(type: GridType) {
         this.type = type
 
         val gridSize  = type.gridSize
@@ -97,7 +97,7 @@ class Grid
     /**
      * Copy constructor for grids.
      */
-    internal constructor(other: Grid) {
+    private constructor(other: Grid) {
         type = other.type
 
         _cells   = ArrayList(cellCount)
@@ -343,48 +343,9 @@ class Grid
         return sb.toString()
     }
 
-    // Inner helper classes.
-    fun interface BlockFunction
-    {
-        fun getBlockIndex(cellIndex: Int): Int
-    }
-
-    class Type constructor(val gridSize: Int, private val blockFunction: BlockFunction)
-    {
-        val cellCount: Int = gridSize * gridSize
-
-        fun getRowIndex(cellIndex: Int): Int {
-            return cellIndex / gridSize
-        }
-
-        fun getColumnIndex(cellIndex: Int): Int {
-            return cellIndex % gridSize
-        }
-
-        fun getBlockIndex(cellIndex: Int): Int {
-            return blockFunction.getBlockIndex(cellIndex)
-        }
-
-        fun getCellIndex(row: Int, column: Int): Int {
-            return (row - 1) * gridSize + (column - 1)
-        }
-
-        fun getCellName(cellIndex: Int): String {
-            return "r${getRowIndex(cellIndex) + 1}c${getColumnIndex(cellIndex) + 1}"
-        }
-
-        override fun toString(): String {
-            return "${gridSize}x${gridSize}"
-        }
-    }
-
     companion object {
-        fun of(type: PredefinedType): Grid {
-            return Grid(Type(type.gridSize, type.blockFunction))
-        }
-
-        fun of(gridSize: Int, blockFunction: BlockFunction): Grid {
-            return Grid(Type(gridSize, blockFunction))
+        fun of(type: GridType): Grid {
+            return Grid(type)
         }
     }
 }

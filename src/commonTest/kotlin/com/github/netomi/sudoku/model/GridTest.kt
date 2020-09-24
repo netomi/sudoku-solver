@@ -24,7 +24,7 @@ import kotlin.test.*
 class GridTest {
     @Test
     fun cellIterator() {
-        val grid = Grid.of(PredefinedType.CLASSIC_9x9)
+        val grid = Grid.of(GridType.CLASSIC_9x9)
         val row  = grid.getRow(0)
 
         assertEquals(grid.gridSize, countItems(row.cells))

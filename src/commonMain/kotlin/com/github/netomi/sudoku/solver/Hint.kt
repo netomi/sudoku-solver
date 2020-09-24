@@ -21,8 +21,9 @@ package com.github.netomi.sudoku.solver
 
 import com.github.netomi.sudoku.model.CellSet
 import com.github.netomi.sudoku.model.Grid
+import com.github.netomi.sudoku.model.GridType
 
-abstract class Hint protected constructor(val gridType:         Grid.Type,
+abstract class Hint protected constructor(val gridType:         GridType,
                                           val solvingTechnique: SolvingTechnique,
                                           val relatedCells:     CellSet) {
     abstract val description: String

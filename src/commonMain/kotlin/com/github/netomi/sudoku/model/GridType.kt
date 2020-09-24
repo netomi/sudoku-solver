@@ -20,9 +20,9 @@
 package com.github.netomi.sudoku.model
 
 /**
- * Some predefined sudoku grids.
+ * Supported sudoku grid types.
  */
-enum class PredefinedType(val gridSize: Int)
+enum class GridType(val gridSize: Int)
 {
     CLASSIC_9x9(9) {
         override val blockMapping = intArrayOf(
@@ -71,7 +71,29 @@ enum class PredefinedType(val gridSize: Int)
 
     internal abstract val blockMapping: IntArray
 
-    val blockFunction = Grid.BlockFunction { cellIndex ->
-        blockMapping[cellIndex]
+    val cellCount: Int = gridSize * gridSize
+
+    fun getRowIndex(cellIndex: Int): Int {
+        return cellIndex / gridSize
+    }
+
+    fun getColumnIndex(cellIndex: Int): Int {
+        return cellIndex % gridSize
+    }
+
+    fun getBlockIndex(cellIndex: Int): Int {
+        return blockMapping[cellIndex]
+    }
+
+    fun getCellIndex(row: Int, column: Int): Int {
+        return (row - 1) * gridSize + (column - 1)
+    }
+
+    fun getCellName(cellIndex: Int): String {
+        return "r${getRowIndex(cellIndex) + 1}c${getColumnIndex(cellIndex) + 1}"
+    }
+
+    override fun toString(): String {
+        return "$name = ${gridSize}x${gridSize}"
     }
 }

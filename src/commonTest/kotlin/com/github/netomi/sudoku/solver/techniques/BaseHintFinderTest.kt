@@ -22,7 +22,7 @@ package com.github.netomi.sudoku.solver.techniques
 import com.github.netomi.sudoku.Resource
 import com.github.netomi.sudoku.io.GridValueLoader
 import com.github.netomi.sudoku.model.Grid
-import com.github.netomi.sudoku.model.PredefinedType
+import com.github.netomi.sudoku.model.GridType
 import com.github.netomi.sudoku.solver.AssignmentHint
 import com.github.netomi.sudoku.solver.EliminationHint
 import com.github.netomi.sudoku.solver.HintFinder
@@ -52,7 +52,7 @@ abstract class BaseHintFinderTest
         var count = 0
         for (testCase in testCases) {
             if (matches(testCase)) {
-                val grid = Grid.of(PredefinedType.CLASSIC_9x9)
+                val grid = Grid.of(GridType.CLASSIC_9x9)
                 grid.accept(GridValueLoader(testCase.givens))
                 for (c in testCase.getDeletedCandidates()) {
                     val cell = grid.getCell(c.row, c.col)
