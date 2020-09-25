@@ -59,6 +59,7 @@ enum class SolvingTechnique(val techniqueName:   String,
     // Single digit patterns.
     SKYSCRAPER("Skyscraper", HARD, 130, ::SkyscraperFinder),
     TWO_STRING_KITE("2-String Kite", HARD, 150, ::TwoStringKiteFinder),
+    EMPTY_RECTANGLE("Empty Rectangle", HARD, 120, ::EmptyRectangleFinder),
 
     // Uniqueness tests.
     UNIQUE_RECTANGLE_TYPE_1("Unique Rectangle Type 1", HARD, 100, ::UniqueRectangleType1Finder),

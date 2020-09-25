@@ -35,10 +35,13 @@ class RemotePairFinder : BaseChainFinder() {
         grid.cells.unassigned().biValue().forEach { cell ->
             val possibleValues = cell.possibleValueSet
 
-            // initial chain setup
+            // initial chain setup.
+            // the choice of the initial chain candidate does not matter as the
+            // respective chains are symmetric. For simplicity reasons, we chose
+            // the first value.
             val firstCandidate = possibleValues.firstSetBit()
             val chain = Chain(grid, cell.cellIndex, firstCandidate)
-            chain.addLink(LinkType.STRONG, cell.cellIndex, possibleValues.nextSetBit(firstCandidate + 1))
+            chain.addLink(LinkType.STRONG, cell.cellIndex, possibleValues.otherSetBit(firstCandidate))
 
             findChain(grid, hintAggregator, cell, chain, visitedChains, 1)
         }
@@ -153,7 +156,7 @@ class XYChainFinder : BaseChainFinder() {
         grid.cells.unassigned().biValue().forEach { cell ->
             for (value in cell.possibleValueSet) {
                 val chain = Chain(grid, cell.cellIndex, value)
-                val linkedCandidate = cell.possibleValueSet.filter { candidate -> candidate != value }.first()
+                val linkedCandidate = cell.possibleValueSet.otherSetBit(value)
                 chain.addLink(LinkType.STRONG, cell.cellIndex, linkedCandidate)
 
                 findChain(grid, hintAggregator, cell, chain, visitedChains, 1)
@@ -171,7 +174,7 @@ class XYChainFinder : BaseChainFinder() {
         // make sure we do not add chains twice: in forward and reverse order taking
         // into account the starting candidate.
         var candidateSet = visitedChains[currentChain.cellSet]
-        candidateSet?.apply { if (this.contains(currentChain.rootNode.candidate)) return }
+        if(candidateSet?.contains(currentChain.rootNode.candidate) == true) return
 
         // to find a xy-chain, the chain has to start and end with a strong link.
         // TODO: currently there is a hard-coded chain limit of 10, make this configurable
@@ -216,16 +219,13 @@ abstract class BaseChainFinder : BaseHintFinder
                                           currentChain:   Chain,
                                           excludedValues: ValueSet) : CellSet?
     {
-        val affectedCells = currentCell.peerSet.toMutableCellSet()
-        affectedCells.andNot(currentChain.cellSet)
+        val affectedCells = currentCell.peerSet.toMutableCellSet().andNot(currentChain.cellSet)
 
         for (affectedCell in affectedCells.cells(grid)) {
-            val peers = affectedCell.peerSet.toMutableCellSet()
-
             val startCell = currentChain.rootNode.cellIndex
             val endPoints = CellSet.of(grid.getCell(startCell), currentCell)
 
-            peers.and(endPoints)
+            val peers = affectedCell.peerSet.toMutableCellSet().and(endPoints)
 
             // if the cell does not see both endpoints,
             // it can not be considered for elimination.

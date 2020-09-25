@@ -89,9 +89,7 @@ class UniqueRectangleType2Finder : BaseUniqueRectangleHintFinder()
 
         for (cell in ur.cellsInSecondHouse) {
             val possibleValues = cell.possibleValueSet
-
-            val excludedValues = possibleValues.toMutableValueSet()
-            excludedValues.andNot(expectedPossibleValues)
+            val excludedValues = possibleValues.toMutableValueSet().andNot(expectedPossibleValues)
 
             if (excludedValues.cardinality() == 1)
             {
@@ -146,14 +144,12 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
             val possibleValues = cell.possibleValueSet
 
             // the UR must have at least 1 UR candidate value.
-            var excludedValues = possibleValues.toMutableValueSet()
-            excludedValues.and(expectedPossibleValues)
+            var excludedValues = possibleValues.toMutableValueSet().and(expectedPossibleValues)
             if (excludedValues.isEmpty) return
             foundCandidateValues.or(excludedValues)
 
             // the UR cells must have at least 1 extra value.
-            excludedValues = possibleValues.toMutableValueSet()
-            excludedValues.andNot(expectedPossibleValues)
+            excludedValues = possibleValues.toMutableValueSet().andNot(expectedPossibleValues)
             if (excludedValues.isEmpty) return
         }
 
@@ -163,8 +159,8 @@ class UniqueRectangleType4Finder : BaseUniqueRectangleHintFinder()
             val cellsWithExtraCandidates = CellSet.of(grid, ur.cellsInSecondHouse.asSequence())
 
             val column = cellsWithExtraCandidates.getSingleColumn(grid)
-            val row = cellsWithExtraCandidates.getSingleRow(grid)
-            val block = cellsWithExtraCandidates.getSingleBlock(grid)
+            val row    = cellsWithExtraCandidates.getSingleRow(grid)
+            val block  = cellsWithExtraCandidates.getSingleBlock(grid)
 
             val searchPositions: (House) -> Unit = {
                 val potentialPositions = it.getPotentialPositionsAsSet(candidate).toMutableCellSet()

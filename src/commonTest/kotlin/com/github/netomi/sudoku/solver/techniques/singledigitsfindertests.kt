@@ -21,7 +21,7 @@ package com.github.netomi.sudoku.solver.techniques
 
 import com.github.netomi.sudoku.solver.HintFinder
 
-class SkyscraperTest : BaseHintFinderTest() {
+class SkyscraperFinderTest : BaseHintFinderTest() {
     override fun createHintFinder(): HintFinder {
         return SkyscraperFinder()
     }
@@ -31,12 +31,22 @@ class SkyscraperTest : BaseHintFinderTest() {
     }
 }
 
-class TwoStringKiteTest : BaseHintFinderTest() {
+class TwoStringKiteFinderTest : BaseHintFinderTest() {
     override fun createHintFinder(): HintFinder {
         return TwoStringKiteFinder()
     }
 
     override fun matches(testCase: TechniqueTestCase): Boolean {
         return testCase.technique.startsWith("0401")
+    }
+}
+
+class EmptyRectangleFinderTest : BaseHintFinderTest() {
+    override fun createHintFinder(): HintFinder {
+        return EmptyRectangleFinder()
+    }
+
+    override fun matches(testCase: TechniqueTestCase): Boolean {
+        return testCase.technique.startsWith("0402")
     }
 }

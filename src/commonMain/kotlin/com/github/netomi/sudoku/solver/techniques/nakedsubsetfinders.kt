@@ -116,8 +116,7 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
     {
         if (level > subSetSize) return false
 
-        val allVisitedValues = visitedValues.copy()
-        allVisitedValues.or(currentCell.possibleValueSet)
+        val allVisitedValues = visitedValues.copy().or(currentCell.possibleValueSet)
         if (allVisitedValues.cardinality() > subSetSize) return false
 
         visitedCells.set(currentCell.cellIndex)

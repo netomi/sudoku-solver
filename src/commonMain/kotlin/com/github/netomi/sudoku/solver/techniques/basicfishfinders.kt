@@ -50,13 +50,15 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
 {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         (grid.rows + grid.columns).unsolved().forEach { house ->
+            val coverSetType = if (house.type == HouseType.ROW) HouseType.COLUMN else HouseType.ROW
+
             for (value in house.unassignedValues()) {
                 findBaseSet(grid,
                             hintAggregator,
                             ArrayList(),
                             house,
                             value,
-                            MutableHouseSet.empty(grid),
+                            MutableHouseSet.empty(grid, coverSetType),
                             1)
             }
         }
@@ -68,7 +70,8 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
                             house:          House,
                             value:          Int,
                             coverSet:       MutableHouseSet,
-                            level:          Int): Boolean {
+                            level:          Int): Boolean
+    {
         if (level > size) return false
 
         val potentialPositions = house.getPotentialPositionsAsSet(value)
@@ -109,7 +112,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
         return foundHint
     }
 
-    private fun getCoverSet(grid: Grid, house: House, potentialPositions: CellSet): MutableHouseSet {
+    private fun getCoverSet(grid: Grid, house: House, potentialPositions: CellSet): HouseSet {
         return when (house.type) {
             HouseType.ROW    -> potentialPositions.toColumnSet(grid)
             HouseType.COLUMN -> potentialPositions.toRowSet(grid)
@@ -117,7 +120,7 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
         }
     }
 
-    private fun getCellsOfCoverSet(grid: Grid, baseSetType: HouseType, coverSet: MutableHouseSet): MutableCellSet {
+    private fun getCellsOfCoverSet(grid: Grid, baseSetType: HouseType, coverSet: HouseSet): MutableCellSet {
         val affectedCells = MutableCellSet.empty(grid)
         for (i in coverSet.setBits()) {
             val house = if (baseSetType === HouseType.ROW) grid.getColumn(i) else grid.getRow(i)

@@ -68,15 +68,13 @@ class XYZWingFinder : BaseWingFinder()
     }
 
     override fun getAffectedCells(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): MutableCellSet {
-        val affectedCells = super.getAffectedCells(pivotCell, pincerOne, pincerTwo)
-        affectedCells.and(pivotCell.peerSet)
-        return affectedCells
+        return super.getAffectedCells(pivotCell, pincerOne, pincerTwo).and(pivotCell.peerSet)
     }
 
     override fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ? {
         var tmp = pivotCell.possibleValueSet.toMutableValueSet()
-        tmp.and(pincerOne.possibleValueSet)
-        tmp.and(pincerTwo.possibleValueSet)
+                    .and(pincerOne.possibleValueSet)
+                    .and(pincerTwo.possibleValueSet)
 
         if (tmp.cardinality() != 1) return null
         val z = tmp.firstSetBit()
@@ -150,18 +148,13 @@ class WWingFinder : BaseHintFinder
     }
 
     private fun getCombinedPeers(cell: Cell, otherCell: Cell): MutableCellSet {
-        val peers = cell.peerSet.toMutableCellSet()
-        peers.and(otherCell.peerSet)
-        return peers
+        return cell.peerSet.toMutableCellSet().and(otherCell.peerSet)
     }
 
     private fun getStronglyLinkedCells(cell: Cell, candidate: Int): Sequence<Cell> {
         val cellList = mutableListOf<Cell>()
 
-        for (house in cell.houses) {
-            val potentialPositionSet = house.getPotentialPositionsAsSet(candidate)
-            if (potentialPositionSet.isNotBiValue) continue
-
+        for (house in cell.houses.biValue(candidate)) {
             cellList.addAll(house.cellsExcluding(cell)
                                  .unassigned()
                                  .filter { it.possibleValueSet[candidate] })
@@ -203,15 +196,11 @@ abstract class BaseWingFinder : BaseHintFinder
     protected abstract fun getXYZ(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): XYZ?
 
     protected open fun getAffectedCells(pivotCell: Cell, pincerOne: Cell, pincerTwo: Cell): MutableCellSet {
-        val affectedCells = pincerOne.peerSet.toMutableCellSet()
-        affectedCells.and(pincerTwo.peerSet)
-        return affectedCells
+        return pincerOne.peerSet.toMutableCellSet().and(pincerTwo.peerSet)
     }
 
     protected fun getZ(pivotCell: Cell, pincerCell: Cell): Int? {
-        val tempValues = pincerCell.possibleValueSet.toMutableValueSet()
-        tempValues.andNot(pivotCell.possibleValueSet)
-
+        val tempValues = pincerCell.possibleValueSet.toMutableValueSet().andNot(pivotCell.possibleValueSet)
         return if (tempValues.cardinality() == 1) tempValues.firstSetBit() else null
     }
 
@@ -223,12 +212,10 @@ abstract class BaseWingFinder : BaseHintFinder
                           relatedCells:   CellSet,
                           xyz:            XYZ)
     {
-        val matchingCells = CellSet.of(pivotCell, pincerOne, pincerTwo)
+        val matchingCells  = CellSet.of(pivotCell, pincerOne, pincerTwo)
         val matchingValues = pivotCell.possibleValueSet.copy()
 
-        val affectedCells = getAffectedCells(pivotCell, pincerOne, pincerTwo)
-        affectedCells.andNot(matchingCells)
-
+        val affectedCells  = getAffectedCells(pivotCell, pincerOne, pincerTwo).andNot(matchingCells)
         val excludedValues = ValueSet.of(grid, xyz.z)
 
         // TODO: highlight the z values, an elimination hint does not yet support this information

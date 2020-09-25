@@ -21,9 +21,10 @@ package com.github.netomi.sudoku.model
 
 import kotlin.test.*
 
-class GridTest {
+class GridTest
+{
     @Test
-    fun cellIterator() {
+    fun cellSequences() {
         val grid = Grid.of(GridType.CLASSIC_9x9)
         val row  = grid.getRow(0)
 
@@ -40,6 +41,24 @@ class GridTest {
         assertEquals(grid.gridSize, countItems(row.cells))
         assertEquals(0, countItems(row.cells.unassigned()))
         assertEquals(0, countItems(row.cellsAfter(grid.getCell(7)).unassigned()))
+    }
+
+    @Test
+    fun houseSequences() {
+        val grid = Grid.of(GridType.CLASSIC_9x9)
+
+        assertEquals(9 * 3, grid.houses.count())
+
+        // excluding some houses
+        val houseSet = MutableHouseSet.empty(grid, HouseType.ROW)
+        houseSet.set(3)
+
+        // sequence of all columns excluding some row should not exclude anything
+        assertEquals(9, grid.columns.excluding(houseSet).count())
+
+        // the row with index 3 should be excluded
+        assertEquals(8, grid.rows.excluding(houseSet).count())
+        assertFalse(grid.rows.excluding(houseSet).contains(grid.getRow(3)))
     }
 
     companion object {

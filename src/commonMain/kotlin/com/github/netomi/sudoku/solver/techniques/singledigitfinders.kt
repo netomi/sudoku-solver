@@ -97,6 +97,94 @@ class TwoStringKiteFinder : BaseSingleDigitFinder()
     }
 }
 
+class EmptyRectangleFinder : BaseHintFinder
+{
+    override val solvingTechnique: SolvingTechnique
+        get() = SolvingTechnique.EMPTY_RECTANGLE
+
+    override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
+        grid.blocks.unsolved().forEach { house ->
+            for (candidate in house.unassignedValues()) {
+                val pairs = findSingleRowAndColumn(house, candidate)
+
+                pairs.forEach {
+                    val (row, col) = it
+
+                    val rowsOfBlock = house.cellSet.toRowSet(grid)
+                    val colsOfBlock = house.cellSet.toColumnSet(grid)
+
+                    // check all columns and rows excluding the ones that are contained in this block
+                    for (currentHouse in grid.columns.excluding(colsOfBlock) +
+                                         grid.rows.excluding(rowsOfBlock))
+                    {
+                        val potentialPositions = currentHouse.getPotentialPositionsAsSet(candidate)
+                        if (potentialPositions.isBiValue) {
+                            for (cell in potentialPositions.cells(grid)) {
+                                val foundMatchingConjugatePair =
+                                    if (currentHouse.type == HouseType.COLUMN) {
+                                        cell.rowIndex == row.regionIndex
+                                    } else {
+                                        cell.columnIndex == col.regionIndex
+                                    }
+
+                                if (foundMatchingConjugatePair) {
+                                    val matchingHouseOfBlock = if (currentHouse.type == HouseType.ROW) row else col
+                                    val otherCell = potentialPositions.otherSetBit(cell.cellIndex)
+                                    foundEmptyRectangleHint(grid, hintAggregator, candidate, house, matchingHouseOfBlock, potentialPositions, grid.getCell(otherCell))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun findSingleRowAndColumn(house: House, candidate: Int): List<Pair<Row, Column>> {
+        val potentialPositions = house.getPotentialPositionsAsSet(candidate)
+
+        if (potentialPositions.cardinality() < 2) return emptyList()
+
+        val pairs = ArrayList<Pair<Row, Column>>()
+
+        for (cell in house.cells) {
+            val potentialCellsInRow = cell.row.cellSet.toMutableCellSet().and(potentialPositions)
+            val potentialCellsInCol = cell.column.cellSet.toMutableCellSet().and(potentialPositions)
+
+            // we have found a potential pivot cell
+            val peers = potentialCellsInRow.or(potentialCellsInCol)
+            if (peers.cardinality() == potentialPositions.cardinality()) {
+                pairs.add(Pair(cell.row, cell.column))
+            }
+        }
+
+        return pairs
+    }
+
+    private fun foundEmptyRectangleHint(grid:           Grid,
+                                        hintAggregator: HintAggregator,
+                                        candidate:      Int,
+                                        house:          House,
+                                        otherHouse:     House,
+                                        relatedCells:   CellSet,
+                                        cell:           Cell)
+    {
+        val affectedCells = MutableCellSet.empty(grid)
+
+        for (peer in cell.peers.excluding(house.cellSet).filter { it.houses.contains(otherHouse) }) {
+            affectedCells.set(peer.cellIndex)
+        }
+
+        // TODO: rework matching and related cells.
+        val matchingCells = MutableCellSet.empty(grid)
+        for (matchingCell in house.cells.filter { it.possibleValueSet[candidate] }) {
+            matchingCells.set(matchingCell.cellIndex)
+        }
+
+        eliminateValuesFromCells(grid, hintAggregator, matchingCells, ValueSet.of(grid, candidate), relatedCells, affectedCells, ValueSet.of(grid, candidate))
+    }
+}
+
 abstract class BaseSingleDigitFinder : BaseHintFinder
 {
     protected abstract fun otherHouses(grid: Grid, house: House): Sequence<House>
@@ -115,8 +203,7 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
             if (potentialOtherPositions.isNotBiValue) continue
 
             // check that the position sets are mutually exclusive.
-            val combinedPositions = potentialPositions.toMutableCellSet()
-            combinedPositions.and(potentialOtherPositions)
+            val combinedPositions = potentialPositions.toMutableCellSet().and(potentialOtherPositions)
             if (combinedPositions.isNotEmpty) continue
 
             checkMatchingHouse(grid, hintAggregator, house, potentialPositions, otherHouse, potentialOtherPositions, candidate)
@@ -144,16 +231,11 @@ abstract class BaseSingleDigitFinder : BaseHintFinder
                     val otherColCell = potentialOtherPositions.cells(grid).excluding(cellInSecondHouse).first()
 
                     // find all cells that see both, the cell in the matching houses.
-                    val affectedCells = otherRowCell.peerSet.toMutableCellSet()
-                    affectedCells.and(otherColCell.peerSet)
-
+                    val affectedCells  = otherRowCell.peerSet.toMutableCellSet().and(otherColCell.peerSet)
                     val excludedValues = ValueSet.of(grid, candidate)
 
-                    val matchingCells = potentialPositions.toMutableCellSet()
-                    matchingCells.or(potentialOtherPositions)
-
-                    val relatedCells = house.cellSet.toMutableCellSet()
-                    relatedCells.or(otherHouse.cellSet)
+                    val matchingCells = potentialPositions.toMutableCellSet().or(potentialOtherPositions)
+                    val relatedCells  = house.cellSet.toMutableCellSet().or(otherHouse.cellSet)
 
                     eliminateValuesFromCells(grid, hintAggregator, matchingCells, relatedCells, affectedCells, excludedValues)
                 }

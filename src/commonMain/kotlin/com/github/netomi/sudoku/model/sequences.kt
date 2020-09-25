@@ -35,6 +35,18 @@ fun Sequence<Cell>.excluding(cell: Cell): Sequence<Cell> {
     return this.filter { it.cellIndex != cell.cellIndex }
 }
 
+fun Sequence<Cell>.excluding(cellSet: CellSet): Sequence<Cell> {
+    return this.filter { !cellSet[it.cellIndex] }
+}
+
+fun Sequence<House>.excluding(houseSet: HouseSet): Sequence<House> {
+    return this.filter { house -> house.type != houseSet.type || !houseSet[house.regionIndex] }
+}
+
 fun Sequence<House>.unsolved(): Sequence<House> {
     return this.filter { !it.isSolved }
+}
+
+fun Sequence<House>.biValue(candidate: Int): Sequence<House> {
+    return this.filter { house -> house.getPotentialPositionsAsSet(candidate).isBiValue }
 }
