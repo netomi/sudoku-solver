@@ -19,34 +19,10 @@
  */
 package com.github.netomi.sudoku.solver.techniques
 
-import com.github.netomi.sudoku.solver.HintFinder
+import com.github.netomi.sudoku.solver.SolvingTechnique.*
 
-class UniqueRectangleType1Test : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return UniqueRectangleType1Finder()
-    }
+class UniqueRectangleType1Test : BaseHintFinderTest(UNIQUE_RECTANGLE_TYPE_1, "0600")
 
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0600")
-    }
-}
+class UniqueRectangleType2Test : BaseHintFinderTest(UNIQUE_RECTANGLE_TYPE_2, "0601")
 
-class UniqueRectangleType2Test : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return UniqueRectangleType2Finder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0601")
-    }
-}
-
-class UniqueRectangleType4Test : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return UniqueRectangleType4Finder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0603")
-    }
-}
+class UniqueRectangleType4Test : BaseHintFinderTest(UNIQUE_RECTANGLE_TYPE_4, "0603")

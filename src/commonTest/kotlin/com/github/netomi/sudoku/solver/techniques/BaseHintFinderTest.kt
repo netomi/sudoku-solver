@@ -23,17 +23,14 @@ import com.github.netomi.sudoku.Resource
 import com.github.netomi.sudoku.io.GridValueLoader
 import com.github.netomi.sudoku.model.Grid
 import com.github.netomi.sudoku.model.GridType
-import com.github.netomi.sudoku.solver.AssignmentHint
-import com.github.netomi.sudoku.solver.EliminationHint
-import com.github.netomi.sudoku.solver.HintFinder
-import com.github.netomi.sudoku.solver.HintSolver
+import com.github.netomi.sudoku.solver.*
 import kotlin.test.*
 
-abstract class BaseHintFinderTest
+abstract class BaseHintFinderTest(private val solvingTechnique: SolvingTechnique, private val testId: String)
 {
-    internal abstract fun createHintFinder(): HintFinder
-
-    internal abstract fun matches(testCase: TechniqueTestCase): Boolean
+    private fun matches(testCase: TechniqueTestCase): Boolean {
+        return testCase.technique.startsWith(testId)
+    }
 
     private lateinit var testCases: List<TechniqueTestCase>
 
@@ -44,7 +41,7 @@ abstract class BaseHintFinderTest
 
     @Test
     fun testRegressionTests() {
-        val hintFinder = createHintFinder()
+        val hintFinder = solvingTechnique.supplier.invoke()
         val solver = HintSolver(hintFinder)
 
         print("Executing testcases for technique: " + hintFinder.solvingTechnique.techniqueName + " - ")

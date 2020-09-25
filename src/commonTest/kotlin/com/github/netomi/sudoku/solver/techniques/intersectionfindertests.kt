@@ -19,44 +19,12 @@
  */
 package com.github.netomi.sudoku.solver.techniques
 
-import com.github.netomi.sudoku.solver.HintFinder
+import com.github.netomi.sudoku.solver.SolvingTechnique.*
 
-class LockedCandidatesType1FinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return LockedCandidatesType1Finder()
-    }
+class LockedCandidatesType1FinderTest : BaseHintFinderTest(LOCKED_CANDIDATES_TYPE_1, "0100")
 
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0100")
-    }
-}
+class LockedCandidatesType2FinderTest : BaseHintFinderTest(LOCKED_CANDIDATES_TYPE_2, "0101")
 
-class LockedCandidatesType2FinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return LockedCandidatesType2Finder()
-    }
+class LockedPairFinderTest : BaseHintFinderTest(LOCKED_PAIR, "0110")
 
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0101")
-    }
-}
-
-class LockedPairFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return LockedPairFinder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0110")
-    }
-}
-
-class LockedTripleFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return LockedTripleFinder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0111")
-    }
-}
+class LockedTripleFinderTest : BaseHintFinderTest(LOCKED_TRIPLE, "0111")

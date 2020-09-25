@@ -19,34 +19,10 @@
  */
 package com.github.netomi.sudoku.solver.techniques
 
-import com.github.netomi.sudoku.solver.HintFinder
+import com.github.netomi.sudoku.solver.SolvingTechnique.*
 
-class XYWingFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return XYWingFinder()
-    }
+class XYWingFinderTest : BaseHintFinderTest(XY_WING, "0800")
 
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0800")
-    }
-}
+class XYZWingFinderTest : BaseHintFinderTest(XYZ_WING, "0801")
 
-class XYZWingFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return XYZWingFinder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0801")
-    }
-}
-
-class WWingFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return WWingFinder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0803")
-    }
-}
+class WWingFinderTest : BaseHintFinderTest(W_WING, "0803")

@@ -19,44 +19,12 @@
  */
 package com.github.netomi.sudoku.solver.techniques
 
-import com.github.netomi.sudoku.solver.HintFinder
+import com.github.netomi.sudoku.solver.SolvingTechnique.*
 
-class SkyscraperFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return SkyscraperFinder()
-    }
+class SkyscraperFinderTest : BaseHintFinderTest(SKYSCRAPER, "0400")
 
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0400")
-    }
-}
+class TwoStringKiteFinderTest : BaseHintFinderTest(TWO_STRING_KITE, "0401")
 
-class TwoStringKiteFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return TwoStringKiteFinder()
-    }
+class EmptyRectangleFinderTest : BaseHintFinderTest(EMPTY_RECTANGLE, "0402")
 
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0401")
-    }
-}
-
-class EmptyRectangleFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return EmptyRectangleFinder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0402")
-    }
-}
-
-class TurbotFishFinderTest : BaseHintFinderTest() {
-    override fun createHintFinder(): HintFinder {
-        return TurbotFishFinder()
-    }
-
-    override fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith("0403")
-    }
-}
+class TurbotFishFinderTest : BaseHintFinderTest(TURBOT_FISH, "0403")
