@@ -87,9 +87,12 @@ class RemotePairFinder : BaseChainFinder() {
     }
 }
 
-class XChainFinder : BaseChainFinder() {
+open class XChainFinder protected constructor(private val maxCellCount: Int) : BaseChainFinder()
+{
     override val solvingTechnique: SolvingTechnique
         get() = SolvingTechnique.X_CHAIN
+
+    constructor() : this(10)
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableSet<CellSet> = HashSet()
@@ -114,11 +117,13 @@ class XChainFinder : BaseChainFinder() {
         val chainCandidate = currentChain.lastNode.candidate
 
         // to find a x-chain, the chain has to start and end with a strong link.
-        if (cellCount >= 4 && currentChain.lastLinkType() == LinkType.STRONG) {
+        if (cellCount in 4..maxCellCount && currentChain.lastLinkType() == LinkType.STRONG) {
             val excludedValues = ValueSet.of(grid, chainCandidate)
             val matchingCells = addChainEliminationHint(grid, hintAggregator, currentCell, currentChain, excludedValues)
             matchingCells?.apply { visitedChains.add(this) }
         }
+
+        if (cellCount >= maxCellCount) return
 
         val nextLinkType = currentChain.lastLinkType()?.opposite() ?: LinkType.STRONG
 
@@ -147,9 +152,12 @@ class XChainFinder : BaseChainFinder() {
     }
 }
 
-class XYChainFinder : BaseChainFinder() {
+class XYChainFinder constructor(private val maxCellCount: Int): BaseChainFinder()
+{
     override val solvingTechnique: SolvingTechnique
         get() = SolvingTechnique.XY_CHAIN
+
+    constructor() : this(10)
 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         val visitedChains: MutableMap<CellSet, MutableSet<Int>> = HashMap()
@@ -177,8 +185,7 @@ class XYChainFinder : BaseChainFinder() {
         if(candidateSet?.contains(currentChain.rootNode.candidate) == true) return
 
         // to find a xy-chain, the chain has to start and end with a strong link.
-        // TODO: currently there is a hard-coded chain limit of 10, make this configurable
-        if (cellCount in 4..10 &&
+        if (cellCount in 4..maxCellCount &&
             currentChain.lastLinkType() == LinkType.STRONG &&
             currentChain.lastNode.candidate == currentChain.rootNode.candidate)
         {
@@ -189,6 +196,8 @@ class XYChainFinder : BaseChainFinder() {
                 candidateSet!!.add(currentChain.rootNode.candidate)
             }
         }
+
+        if (cellCount >= maxCellCount) return
 
         for (nextCell in currentCell.peers) {
             if (currentChain.contains(nextCell)) continue

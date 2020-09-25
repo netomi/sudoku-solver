@@ -169,16 +169,19 @@ abstract class AbstractBitSetImpl<in T : SimpleBitSet, out R : MutableBitSet<T, 
         return Sequence { BitIterator(startBit, size, true) }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun and(other: T): R {
         bits.and(other.bits)
         return this as R
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun or(other: T): R {
         bits.or(other.bits)
         return this as R
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun andNot(other: T): R {
         bits.andNot(other.bits)
         return this as R

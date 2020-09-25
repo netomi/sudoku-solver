@@ -50,3 +50,13 @@ class EmptyRectangleFinderTest : BaseHintFinderTest() {
         return testCase.technique.startsWith("0402")
     }
 }
+
+class TurbotFishFinderTest : BaseHintFinderTest() {
+    override fun createHintFinder(): HintFinder {
+        return TurbotFishFinder()
+    }
+
+    override fun matches(testCase: TechniqueTestCase): Boolean {
+        return testCase.technique.startsWith("0403")
+    }
+}

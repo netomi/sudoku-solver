@@ -97,6 +97,9 @@ class TwoStringKiteFinder : BaseSingleDigitFinder()
     }
 }
 
+/**
+ * A [HintFinder] implementation ...
+ */
 class EmptyRectangleFinder : BaseHintFinder
 {
     override val solvingTechnique: SolvingTechnique
@@ -183,6 +186,16 @@ class EmptyRectangleFinder : BaseHintFinder
 
         eliminateValuesFromCells(grid, hintAggregator, matchingCells, ValueSet.of(grid, candidate), relatedCells, affectedCells, ValueSet.of(grid, candidate))
     }
+}
+
+/**
+ * A Turbot Fish is really a chain. Its a synonym for an x-chain with
+ * a length of exactly 4 cells.
+ */
+class TurbotFishFinder : XChainFinder(4)
+{
+    override val solvingTechnique: SolvingTechnique
+        get() = SolvingTechnique.TURBOT_FISH
 }
 
 abstract class BaseSingleDigitFinder : BaseHintFinder

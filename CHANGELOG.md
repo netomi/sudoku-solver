@@ -5,7 +5,7 @@
 ### Added
 - added additional hint solver techniques
   - wings (xy-wing, xyz-wing, w-wing)
-  - single digit patterns (empty rectangle)
+  - single digit patterns (empty rectangle, turbot fish)
  
 ### Fixed
  
