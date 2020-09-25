@@ -94,6 +94,6 @@ enum class GridType(val gridSize: Int)
     }
 
     override fun toString(): String {
-        return "$name = ${gridSize}x${gridSize}"
+        return name
     }
 }
