@@ -185,7 +185,7 @@ class XYChainFinder constructor(private val maxCellCount: Int): BaseChainFinder(
         if(candidateSet?.contains(currentChain.rootNode.candidate) == true) return
 
         // to find a xy-chain, the chain has to start and end with a strong link.
-        if (cellCount in 4..maxCellCount &&
+        if (cellCount in 2..maxCellCount &&
             currentChain.lastLinkType() == LinkType.STRONG &&
             currentChain.lastNode.candidate == currentChain.rootNode.candidate)
         {
