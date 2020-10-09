@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package com.github.netomi.sudoku.io
+package com.github.netomi.sudoku.model.io
 
 import com.github.netomi.sudoku.model.Grid
 import com.github.netomi.sudoku.model.GridVisitor
@@ -32,7 +32,7 @@ class GridPrinter constructor(private val style: STYLE, private val appendable: 
     override fun visitGrid(grid: Grid): Grid {
         when (style) {
             STYLE.ONE_LINE -> printOnelineGrid(grid)
-            STYLE.SIMPLE   -> printSimpleGrid(grid)
+            STYLE.SIMPLE -> printSimpleGrid(grid)
         }
         return grid
     }

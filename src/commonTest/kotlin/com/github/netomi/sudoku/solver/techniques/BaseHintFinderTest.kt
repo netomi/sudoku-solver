@@ -20,7 +20,7 @@
 package com.github.netomi.sudoku.solver.techniques
 
 import com.github.netomi.sudoku.Resource
-import com.github.netomi.sudoku.io.GridValueLoader
+import com.github.netomi.sudoku.model.io.GridValueLoader
 import com.github.netomi.sudoku.model.Grid
 import com.github.netomi.sudoku.model.GridType
 import com.github.netomi.sudoku.solver.*
