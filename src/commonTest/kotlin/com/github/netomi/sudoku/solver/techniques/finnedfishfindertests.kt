@@ -21,8 +21,8 @@ package com.github.netomi.sudoku.solver.techniques
 
 import com.github.netomi.sudoku.solver.SolvingTechnique.*
 
-class UniqueRectangleType1Test : BaseHintFinderTest(UNIQUE_RECTANGLE_TYPE_1, "0600-[0-9]")
+class FinnedXWingHintFinderTest : BaseHintFinderTest(FINNED_X_WING, "0310")
 
-class UniqueRectangleType2Test : BaseHintFinderTest(UNIQUE_RECTANGLE_TYPE_2, "0601-[0-9]")
+class FinnedSwordFishFinderTest : BaseHintFinderTest(FINNED_SWORDFISH, "0311")
 
-class UniqueRectangleType4Test : BaseHintFinderTest(UNIQUE_RECTANGLE_TYPE_4, "0603-[0-9]")
+//class FinnedJellyFishFinderTest : BaseHintFinderTest(FINNED_JELLYFISH, "0312")

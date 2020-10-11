@@ -25,7 +25,7 @@ import com.github.netomi.sudoku.solver.HintAggregator
 import com.github.netomi.sudoku.solver.HintFinder
 import com.github.netomi.sudoku.solver.SolvingTechnique
 
-class XWingHintFinder : BasicFishFinder(2) {
+class XWingFinder : BasicFishFinder(2) {
     override val solvingTechnique: SolvingTechnique
         get() = SolvingTechnique.X_WING
 }

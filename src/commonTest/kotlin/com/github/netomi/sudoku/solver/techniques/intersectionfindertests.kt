@@ -25,6 +25,6 @@ class LockedCandidatesType1FinderTest : BaseHintFinderTest(LOCKED_CANDIDATES_TYP
 
 class LockedCandidatesType2FinderTest : BaseHintFinderTest(LOCKED_CANDIDATES_TYPE_2, "0101")
 
-class LockedPairFinderTest : BaseHintFinderTest(LOCKED_PAIR, "0110")
+class LockedPairFinderTest : BaseHintFinderTest(LOCKED_PAIR, "0110-[0-9]")
 
-class LockedTripleFinderTest : BaseHintFinderTest(LOCKED_TRIPLE, "0111")
+class LockedTripleFinderTest : BaseHintFinderTest(LOCKED_TRIPLE, "0111-[0-9]")

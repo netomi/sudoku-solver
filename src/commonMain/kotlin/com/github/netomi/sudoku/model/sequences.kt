@@ -43,6 +43,10 @@ fun Sequence<House>.excluding(houseSet: HouseSet): Sequence<House> {
     return this.filter { house -> house.type != houseSet.type || !houseSet[house.regionIndex] }
 }
 
+fun Sequence<House>.excluding(excludedHouse: House): Sequence<House> {
+    return this.filter { house -> house !== excludedHouse }
+}
+
 fun Sequence<House>.unsolved(): Sequence<House> {
     return this.filter { !it.isSolved }
 }

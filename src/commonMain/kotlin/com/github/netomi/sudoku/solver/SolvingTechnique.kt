@@ -52,9 +52,14 @@ enum class SolvingTechnique(val techniqueName:   String,
     NAKED_QUADRUPLE("Naked Quadruple", HARD, 120, ::NakedQuadrupleFinder),
 
     // Basic fish.
-    X_WING("X-Wing", HARD, 140, ::XWingHintFinder),
+    X_WING("X-Wing", HARD, 140, ::XWingFinder),
     SWORDFISH("Swordfish", HARD, 150, ::SwordFishFinder),
     JELLYFISH("Jellyfish", HARD, 160, ::JellyFishFinder),
+
+    // Finned fish.
+    FINNED_X_WING("Finned X-Wing", HARD, 130, ::FinnedXWingFinder),
+    FINNED_SWORDFISH("Finned Swordfish", UNFAIR, 200, ::FinnedSwordFishFinder),
+    FINNED_JELLYFISH("Finned Jellyfish", UNFAIR, 250, ::FinnedJellyFishFinder),
 
     // Single digit patterns.
     SKYSCRAPER("Skyscraper", HARD, 130, ::SkyscraperFinder),

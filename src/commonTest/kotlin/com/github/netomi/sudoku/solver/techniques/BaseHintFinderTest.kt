@@ -29,7 +29,7 @@ import kotlin.test.*
 abstract class BaseHintFinderTest(private val solvingTechnique: SolvingTechnique, private val testId: String)
 {
     private fun matches(testCase: TechniqueTestCase): Boolean {
-        return testCase.technique.startsWith(testId)
+        return testCase.technique.matches(Regex(testId))
     }
 
     private lateinit var testCases: List<TechniqueTestCase>
