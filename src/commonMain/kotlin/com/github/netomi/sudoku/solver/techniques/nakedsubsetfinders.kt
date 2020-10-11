@@ -53,12 +53,7 @@ open class NakedPairFinder : BaseHintFinder
 
                         affectedCells.clear(cell.cellIndex)
                         affectedCells.clear(otherCell.cellIndex)
-                        eliminateValuesFromCells(grid,
-                                                 hintAggregator,
-                                                 matchingCells,
-                                                 relatedCells,
-                                                 affectedCells,
-                                                 possibleValues.copy())
+                        eliminateValuesFromCells(grid, hintAggregator, matchingCells, relatedCells, affectedCells, possibleValues.copy())
                     }
                 }
             }
@@ -95,13 +90,9 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
         // look first in blocks to generate fewer hints.
         (grid.blocks + grid.rows + grid.columns).unsolved().forEach { house ->
             house.cells.unassigned().forEach { cell ->
-                findSubset(grid,
-                           hintAggregator,
-                           house,
-                           MutableCellSet.empty(grid),
-                           cell,
-                           MutableValueSet.empty(grid),
-                           1)
+                val visitedCells  = MutableCellSet.empty(grid)
+                val visitedValues = MutableValueSet.empty(grid)
+                findSubset(grid, hintAggregator, house, visitedCells, cell, visitedValues, 1)
             }
         }
     }
@@ -112,41 +103,31 @@ abstract class NakedSubsetFinder protected constructor(private val subSetSize: I
                            visitedCells:   MutableCellSet,
                            currentCell:    Cell,
                            visitedValues:  MutableValueSet,
-                           level:          Int): Boolean
+                           level:          Int)
     {
-        if (level > subSetSize) return false
-
-        val allVisitedValues = visitedValues.copy().or(currentCell.possibleValueSet)
-        if (allVisitedValues.cardinality() > subSetSize) return false
-
         visitedCells.set(currentCell.cellIndex)
 
-        if (level == subSetSize) {
-            var foundHint = false
-            if (allVisitedValues.cardinality() == subSetSize) {
-                val affectedCells = house.cellSet.toMutableCellSet()
-                val relatedCells  = affectedCells.copy()
+        try {
+            if (level > subSetSize) return
 
-                affectedCells.andNot(visitedCells)
-                eliminateValuesFromCells(grid, hintAggregator, visitedCells.copy(), relatedCells, affectedCells, allVisitedValues)
-                foundHint = true
+            val allVisitedValues = visitedValues.copy().or(currentCell.possibleValueSet)
+            if (allVisitedValues.cardinality() > subSetSize) return
+
+            if (level == subSetSize) {
+                if (allVisitedValues.cardinality() == subSetSize) {
+                    val affectedCells = house.cellSet.toMutableCellSet()
+                    val relatedCells = affectedCells.copy()
+
+                    affectedCells.andNot(visitedCells)
+                    eliminateValuesFromCells(grid, hintAggregator, visitedCells.copy(), relatedCells, affectedCells, allVisitedValues)
+                }
+            } else {
+                house.cellsAfter(currentCell).unassigned().forEach { nextCell ->
+                    findSubset(grid, hintAggregator, house, visitedCells, nextCell, allVisitedValues, level + 1)
+                }
             }
+        } finally {
             visitedCells.clear(currentCell.cellIndex)
-            return foundHint
         }
-
-        var foundHint = false
-        house.cellsAfter(currentCell).unassigned().forEach { nextCell ->
-            foundHint = foundHint or findSubset(grid,
-                                                hintAggregator,
-                                                house,
-                                                visitedCells,
-                                                nextCell,
-                                                allVisitedValues,
-                                                level + 1)
-        }
-
-        visitedCells.clear(currentCell.cellIndex)
-        return foundHint
     }
 }

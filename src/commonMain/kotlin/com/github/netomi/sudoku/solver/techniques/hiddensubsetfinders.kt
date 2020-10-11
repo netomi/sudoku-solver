@@ -85,13 +85,7 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.houses.unsolved().forEach { house ->
             for (value in house.unassignedValues()) {
-                findSubset(grid,
-                           hintAggregator,
-                           house,
-                           MutableValueSet.empty(grid),
-                           value,
-                           MutableCellSet.empty(grid),
-                           1)
+                findSubset(grid, hintAggregator, house, MutableValueSet.empty(grid), value, MutableCellSet.empty(grid), 1)
             }
         }
     }
@@ -102,39 +96,31 @@ abstract class HiddenSubsetFinder protected constructor(private val subSetSize: 
                            visitedValues:    MutableValueSet,
                            currentValue:     Int,
                            visitedPositions: MutableCellSet,
-                           level:            Int): Boolean
+                           level:            Int)
     {
-        if (level > subSetSize) return false
-
-        val potentialPositions: CellSet = house.getPotentialPositionsAsSet(currentValue)
-        val allPotentialPositions = visitedPositions.copy()
-        allPotentialPositions.or(potentialPositions)
-        if (allPotentialPositions.cardinality() > subSetSize) return false
-
         visitedValues.set(currentValue)
 
-        if (level == subSetSize) {
-            var foundHint = false
-            if (allPotentialPositions.cardinality() == subSetSize) {
-                eliminateNotAllowedValuesFromCells(grid, hintAggregator, allPotentialPositions, visitedValues.copy(), house.cellSet)
-                foundHint = true
+        try {
+            if (level > subSetSize) return
+
+            val potentialPositions    = house.getPotentialPositionsAsSet(currentValue)
+            val allPotentialPositions = visitedPositions.copy()
+
+            allPotentialPositions.or(potentialPositions)
+
+            if (allPotentialPositions.cardinality() > subSetSize) return
+
+            if (level == subSetSize) {
+                if (allPotentialPositions.cardinality() == subSetSize) {
+                    eliminateNotAllowedValuesFromCells(grid, hintAggregator, allPotentialPositions, visitedValues.copy(), house.cellSet)
+                }
+            } else {
+                for (nextValue in house.unassignedValuesAfter(currentValue)) {
+                    findSubset(grid, hintAggregator, house, visitedValues, nextValue, allPotentialPositions, level + 1)
+                }
             }
+        } finally {
             visitedValues.clear(currentValue)
-            return foundHint
         }
-
-        var foundHint = false
-        for (nextValue in house.unassignedValuesAfter(currentValue)) {
-            foundHint = foundHint or findSubset(grid,
-                                                hintAggregator,
-                                                house,
-                                                visitedValues,
-                                                nextValue,
-                                                allPotentialPositions,
-                                                level + 1)
-        }
-
-        visitedValues.clear(currentValue)
-        return foundHint
     }
 }

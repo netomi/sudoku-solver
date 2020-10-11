@@ -53,13 +53,8 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
             val coverSetType = if (house.type == HouseType.ROW) HouseType.COLUMN else HouseType.ROW
 
             for (value in house.unassignedValues()) {
-                findBaseSet(grid,
-                            hintAggregator,
-                            ArrayList(),
-                            house,
-                            value,
-                            MutableHouseSet.empty(grid, coverSetType),
-                            1)
+                val coverSet = MutableHouseSet.empty(grid, coverSetType)
+                findBaseSet(grid, hintAggregator, ArrayList(), house, value, coverSet, 1)
             }
         }
     }
@@ -70,46 +65,47 @@ abstract class BasicFishFinder protected constructor(private val size: Int) : Ba
                             house:          House,
                             value:          Int,
                             coverSet:       MutableHouseSet,
-                            level:          Int): Boolean
+                            level:          Int)
     {
-        if (level > size) return false
-
-        val potentialPositions = house.getPotentialPositionsAsSet(value)
-        if (potentialPositions.cardinality() > size) return false
-
-        val mergedCoverSet = coverSet.copy()
-        mergedCoverSet.or(getCoverSet(grid, house, potentialPositions))
-        if (mergedCoverSet.cardinality() > size) return false
-
         visitedRegions.add(house)
-        if (level == size) {
-            // get affected cells from cover sets.
-            val affectedCells = getCellsOfCoverSet(grid, house.type, mergedCoverSet)
-            val matchingCells = MutableCellSet.empty(grid)
 
-            // remove all cells from base sets.
-            for (region in visitedRegions) {
-                affectedCells.andNot(region.cellSet)
-                matchingCells.or(region.cellSet)
+        try {
+            if (level > size) return
+
+            val potentialPositions = house.getPotentialPositionsAsSet(value)
+            if (potentialPositions.cardinality() < 2 ||
+                potentialPositions.cardinality() > size) return
+
+            val mergedCoverSet = coverSet.copy()
+            mergedCoverSet.or(getCoverSet(grid, house, potentialPositions))
+            if (mergedCoverSet.cardinality() > size) return
+
+            if (level == size) {
+                // get affected cells from the cover sets.
+                val affectedCells = getCellsOfCoverSet(grid, house.type, mergedCoverSet)
+                val matchingCells = MutableCellSet.empty(grid)
+
+                // remove all cells from base sets.
+                for (region in visitedRegions) {
+                    affectedCells.andNot(region.cellSet)
+                    matchingCells.or(region.cellSet)
+                }
+
+                val excludedValue = ValueSet.of(grid, value)
+
+                // eliminate the detected fish value from all affected cells,
+                // affected cells = cells of cover set - cells of base set
+                eliminateValuesFromCells(grid, hintAggregator, matchingCells, matchingCells, affectedCells, excludedValue)
+            } else {
+                grid.regionsAfter(house).unsolved().forEach { nextHouse ->
+                    if (!nextHouse.assignedValueSet[value]) {
+                        findBaseSet(grid, hintAggregator, visitedRegions, nextHouse, value, mergedCoverSet, level + 1)
+                    }
+                }
             }
-
-            val excludedValue = ValueSet.of(grid, value)
-
-            // eliminate the detected fish value from all affected cells,
-            // affected cells = cells of cover set - cells of base set
-            eliminateValuesFromCells(grid, hintAggregator, matchingCells, matchingCells, affectedCells, excludedValue)
+        } finally {
             visitedRegions.removeLast()
-            return true
         }
-
-        var foundHint = false
-        grid.regionsAfter(house).unsolved().forEach { nextHouse ->
-            if (!nextHouse.assignedValueSet[value]) {
-                foundHint = foundHint or findBaseSet(grid, hintAggregator, visitedRegions, nextHouse, value, mergedCoverSet, level + 1)
-            }
-        }
-        visitedRegions.removeAt(visitedRegions.size - 1)
-        return foundHint
     }
 
     private fun getCoverSet(grid: Grid, house: House, potentialPositions: CellSet): HouseSet {

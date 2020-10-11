@@ -142,13 +142,9 @@ class LockedTripleFinder : BaseHintFinder {
     override fun findHints(grid: Grid, hintAggregator: HintAggregator) {
         grid.blocks.unsolved().forEach { house ->
             for (cell in house.cells.unassigned()) {
-                findSubset(grid,
-                           hintAggregator,
-                           house,
-                           MutableCellSet.empty(grid),
-                           cell,
-                           MutableValueSet.empty(grid),
-                           1)
+                val visitedCells  = MutableCellSet.empty(grid)
+                val visitedValues = MutableValueSet.empty(grid)
+                findSubset(grid, hintAggregator, house, visitedCells, cell, visitedValues, 1)
             }
         }
     }
@@ -159,52 +155,42 @@ class LockedTripleFinder : BaseHintFinder {
                            visitedCells:   MutableCellSet,
                            currentCell:    Cell,
                            visitedValues:  MutableValueSet,
-                           level:          Int): Boolean
+                           level:          Int)
     {
-        if (level > subSetSize) return false
-
-        val allVisitedValues = visitedValues.copy().or(currentCell.possibleValueSet)
-        if (allVisitedValues.cardinality() > subSetSize) return false
-
         visitedCells.set(currentCell.cellIndex)
 
-        if (level == subSetSize) {
-            var foundHint = false
-            if (allVisitedValues.cardinality() == subSetSize) {
-                val affectedCells = house.cellSet.toMutableCellSet()
+        try {
+            if (level > subSetSize) return
 
-                val row = visitedCells.getSingleRow(grid)
-                row?.let { affectedCells.or(it.cellSet) }
+            val allVisitedValues = visitedValues.copy().or(currentCell.possibleValueSet)
+            if (allVisitedValues.cardinality() > subSetSize) return
 
-                val col = visitedCells.getSingleColumn(grid)
-                col?.let { affectedCells.or(it.cellSet) }
+            if (level == subSetSize) {
+                if (allVisitedValues.cardinality() == subSetSize) {
+                    val affectedCells = house.cellSet.toMutableCellSet()
 
-                // if the cells are either on the same
-                // row or column, we have found a locked triple.
-                if (row != null || col != null) {
-                    val relatedCells = affectedCells.copy()
+                    val row = visitedCells.getSingleRow(grid)
+                    row?.let { affectedCells.or(it.cellSet) }
 
-                    affectedCells.andNot(visitedCells)
-                    eliminateValuesFromCells(grid, hintAggregator, visitedCells.copy(), relatedCells, affectedCells, allVisitedValues)
-                    foundHint = true
+                    val col = visitedCells.getSingleColumn(grid)
+                    col?.let { affectedCells.or(it.cellSet) }
+
+                    // if the cells are either on the same
+                    // row or column, we have found a locked triple.
+                    if (row != null || col != null) {
+                        val relatedCells = affectedCells.copy()
+
+                        affectedCells.andNot(visitedCells)
+                        eliminateValuesFromCells(grid, hintAggregator, visitedCells.copy(), relatedCells, affectedCells, allVisitedValues)
+                    }
+                }
+            } else {
+                house.cellsAfter(currentCell).unassigned().forEach { nextCell ->
+                    findSubset(grid, hintAggregator, house, visitedCells, nextCell, allVisitedValues, level + 1)
                 }
             }
+        } finally {
             visitedCells.clear(currentCell.cellIndex)
-            return foundHint
         }
-
-        var foundHint = false
-        house.cellsAfter(currentCell).unassigned().forEach { nextCell ->
-            foundHint = foundHint or findSubset(grid,
-                                                hintAggregator,
-                                                house,
-                                                visitedCells,
-                                                nextCell,
-                                                allVisitedValues,
-                                                level + 1)
-        }
-
-        visitedCells.clear(currentCell.cellIndex)
-        return foundHint
     }
 }
