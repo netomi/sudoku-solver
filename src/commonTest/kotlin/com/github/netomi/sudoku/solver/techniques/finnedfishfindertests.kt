@@ -25,4 +25,4 @@ class FinnedXWingHintFinderTest : BaseHintFinderTest(FINNED_X_WING, "0310")
 
 class FinnedSwordFishFinderTest : BaseHintFinderTest(FINNED_SWORDFISH, "0311")
 
-//class FinnedJellyFishFinderTest : BaseHintFinderTest(FINNED_JELLYFISH, "0312")
+class FinnedJellyFishFinderTest : BaseHintFinderTest(FINNED_JELLYFISH, "0312")

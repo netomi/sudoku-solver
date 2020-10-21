@@ -22,7 +22,6 @@ package com.github.netomi.sudoku.solver.techniques
 import com.github.netomi.sudoku.model.*
 import com.github.netomi.sudoku.solver.BaseHintFinder
 import com.github.netomi.sudoku.solver.HintAggregator
-import com.github.netomi.sudoku.solver.HintFinder
 import com.github.netomi.sudoku.solver.SolvingTechnique
 
 class FinnedXWingFinder : FinnedFishFinder(2) {
@@ -78,14 +77,22 @@ abstract class FinnedFishFinder protected constructor(private val size: Int) : B
 
                 // This is a naive search: test any house of the base set for potential fins.
                 for (finHouse in visitedRegions) {
+                    val finHouses = mutableListOf(finHouse)
+
                     val coverSet = MutableHouseSet.empty(grid, coverSetType)
                     for (otherHouse in visitedRegions.asSequence().excluding(finHouse)) {
-                        coverSet.or(getCoverSet(grid, otherHouse, otherHouse.getPotentialPositionsAsSet(value)))
+                        if (otherHouse.getPotentialPositionsAsSet(value).cardinality() > size) {
+                            // there might be multiple houses with fins
+                            finHouses.add(otherHouse)
+                        } else {
+                            coverSet.or(getCoverSet(grid, otherHouse, otherHouse.getPotentialPositionsAsSet(value)))
+                        }
                     }
 
                     if (coverSet.cardinality() > size) continue
 
-                    val finCellSet = getFinCells(grid, finHouse, value, coverSet)
+                    val finCellSet = MutableCellSet.empty(grid)
+                    finHouses.forEach { finCellSet.or(getFinCells(grid, it, value, coverSet)) }
 
                     // get affected cells from cover sets.
                     val affectedCells = getCellsOfCoverSet(grid, house.type, coverSet)
@@ -123,7 +130,7 @@ abstract class FinnedFishFinder protected constructor(private val size: Int) : B
     private fun getFinCells(grid: Grid, houseWithFin: House, fishValue: Int, coverSet: HouseSet): CellSet {
         val finCellSet = MutableCellSet.empty(grid)
         for (cell in houseWithFin.potentialCells(fishValue)) {
-            var isFin = when(coverSet.type) {
+            val isFin = when(coverSet.type) {
                 HouseType.ROW    -> !coverSet[cell.rowIndex]
                 HouseType.COLUMN -> !coverSet[cell.columnIndex]
                 else -> error("unexpected house type ${coverSet.type}")
